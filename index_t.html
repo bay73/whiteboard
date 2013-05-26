@@ -1,0 +1,20 @@
+<!DOCTYPE html>
+<html style="height:100%;">
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+  <title>Smart Whiteboard</title>
+  <script src="../closure-library/closure/goog/base.js"></script>
+  <script src="base.js"></script>
+  <script src="ui.js"></script>
+  <script src="geom.js"></script>
+  <link rel="stylesheet" href="goog.css">
+  <link rel="stylesheet" href="ui.css">
+</head>
+<body style="height:94%;">
+  <div id="whiteboard" style = "width:100%; height:100%;"></div>
+</body>
+</html>
+<script type="text/javascript">
+  whiteboard = bay.whiteboard.Create();
+  whiteboard.render(document.getElementById('whiteboard'));
+</script>
