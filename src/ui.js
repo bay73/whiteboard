@@ -10,6 +10,7 @@ goog.require('goog.fx.Dragger');
 goog.require('goog.fx.Dragger.EventType');
 goog.require('goog.ui.Button');
 goog.require('goog.ui.BidiInput');
+goog.require('goog.ui.Dialog');
 goog.require('goog.ui.Textarea');
 goog.require('goog.ui.Checkbox');
 goog.require('goog.ui.ColorMenuButton');
@@ -223,6 +224,27 @@ bay.whiteboard.Whiteboard.prototype.zoomIn = function(){
 bay.whiteboard.Whiteboard.prototype.zoomOut = function(){
   this.scale(new bay.whiteboard.Vector(this.graphics.getCoordSize().width/2, this.graphics.getCoordSize().height/2), 0.5);
   this.redrawAll();
+}
+
+// *********************************** codePanel *********************************************//
+bay.whiteboard.Whiteboard.prototype.showCodePanel = function(){
+  var dialog = new goog.ui.Dialog();
+  dialog.setTitle('JSON code for drawing');
+  dialog.setButtonSet(goog.ui.Dialog.ButtonSet.OK_CANCEL);
+  var textArea = new goog.ui.Textarea(this.collections.main.jsonCode());
+  textArea.setMinHeight(this.graphics.getCoordSize().height/2);
+  textArea.setMaxHeight(this.graphics.getCoordSize().height);
+  dialog.addChild(textArea, true);
+  goog.style.setSize(textArea.getElement(), this.graphics.getCoordSize().width/2, this.graphics.getCoordSize().height/2);
+  goog.dom.classes.add(textArea.getElement(), 'codeArea');
+  goog.events.listen(dialog, goog.ui.Dialog.EventType.SELECT, function(e) {
+    if (e.key == 'ok'){
+      this.collections.main.parseJson(textArea.getValue());
+      this.redrawAll();
+    }
+    dialog.dispose();
+  }, null, this);
+  dialog.setVisible(true);
 }
 
 // *************************** event utilities *************************************** //

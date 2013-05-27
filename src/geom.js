@@ -30,6 +30,19 @@ bay.whiteboard.geometry.PointAtLine.prototype.recalc = function(){
   this.recalcDependat();
 }
 
+bay.whiteboard.geometry.PointAtLine.prototype.toJson = function(list, id){
+  return '{' + this.jsonHeader(id) + ', "type": "PointAtLine", "obj": ' + list.indexOf(this.obj) + ', "t": ' + this.param + '}';
+}
+
+bay.whiteboard.geometry.PointAtLine.fromJson = function(item, list){
+  var point = new bay.whiteboard.geometry.PointAtLine( list[item.obj], item.t);
+  point.restoreFromJson(item);
+  return point;
+}
+
+bay.whiteboard.Collection.setFromJsonFunc("PointAtLine", bay.whiteboard.geometry.PointAtLine.fromJson);
+
+
 // *************************************** PointAtCircle ******************************************* //
 bay.whiteboard.geometry.PointAtCircle = function(c, v){
   bay.whiteboard.Point.call(this);
@@ -64,6 +77,18 @@ bay.whiteboard.geometry.PointAtCircle.prototype.recalc = function(){
   }
   this.recalcDependat();
 }
+
+bay.whiteboard.geometry.PointAtCircle.prototype.toJson = function(list, id){
+  return '{' + this.jsonHeader(id) + ', "type": "PointAtCircle", "obj": ' + list.indexOf(this.obj) + ', "x": ' + this.direction.x + ', "y": ' + this.direction.y + '}';
+}
+
+bay.whiteboard.geometry.PointAtCircle.fromJson = function(item, list){
+  var point = new bay.whiteboard.geometry.PointAtCircle( list[item.obj], new bay.whiteboard.geometry.Vector(item.x, item.y));
+  point.restoreFromJson(item);
+  return point;
+}
+bay.whiteboard.Collection.setFromJsonFunc("PointAtCircle", bay.whiteboard.geometry.PointAtCircle.fromJson);
+
 
 // *************************************** TwoLineIntersectionPoint ******************************************* //
 bay.whiteboard.geometry.Point_2l = function(l1, l2){
@@ -104,6 +129,19 @@ bay.whiteboard.geometry.Point_2l.prototype.recalc = function(){
   }
   this.recalcDependat();
 }
+
+bay.whiteboard.geometry.Point_2l.prototype.toJson = function(list, id){
+  return '{' + this.jsonHeader(id) + ', "type": "Point_2l", "obj1": ' + list.indexOf(this.obj1) + ', "obj2": ' + list.indexOf(this.obj2) + '}';
+}
+
+bay.whiteboard.geometry.Point_2l.fromJson = function(item, list){
+  var point = new bay.whiteboard.geometry.Point_2l( list[item.obj1], list[item.obj2]);
+  point.restoreFromJson(item);
+  return point;
+}
+bay.whiteboard.Collection.setFromJsonFunc("Point_2l", bay.whiteboard.geometry.Point_2l.fromJson);
+
+
 
 // *************************************** TwoCircleIntersectionPoint ******************************************* //
 
@@ -155,6 +193,18 @@ bay.whiteboard.geometry.Point_2c.prototype.recalc = function(){
   this.recalcDependat();
 }
 
+bay.whiteboard.geometry.Point_2c.prototype.toJson = function(list, id){
+  return '{' + this.jsonHeader(id) + ', "type": "Point_2c", "obj1": ' + list.indexOf(this.obj1) + ', "obj2": ' + list.indexOf(this.obj2) + ', "num": ' + this.intersectNum +'}';
+}
+
+bay.whiteboard.geometry.Point_2c.fromJson = function(item, list){
+  var point = new bay.whiteboard.geometry.Point_2c( list[item.obj1], list[item.obj2], item.num);
+  point.restoreFromJson(item);
+  return point;
+}
+
+bay.whiteboard.Collection.setFromJsonFunc("Point_2c", bay.whiteboard.geometry.Point_2c.fromJson);
+
 // *************************************** LineAndCircleIntersectionPoint ******************************************* //
 
 bay.whiteboard.geometry.Point_lc = function(l, c, num){
@@ -199,6 +249,20 @@ bay.whiteboard.geometry.Point_lc.prototype.recalc = function(){
   }
   this.recalcDependat();
 }
+
+bay.whiteboard.geometry.Point_lc.prototype.toJson = function(list, id){
+  return '{' + this.jsonHeader(id) + ', "type": "Point_lc", "obj1": ' + list.indexOf(this.obj1) + ', "obj2": ' + list.indexOf(this.obj2) + ', "num": ' + this.intersectNum + '}';
+}
+
+bay.whiteboard.geometry.Point_lc.fromJson = function(item, list){
+  var point = new bay.whiteboard.geometry.Point_lc( list[item.obj1], list[item.obj2], item.num);
+  point.restoreFromJson(item);
+  return point;
+}
+
+bay.whiteboard.Collection.setFromJsonFunc("Point_lc", bay.whiteboard.geometry.Point_lc.fromJson);
+
+
 
 // *************************************** Line **************************************** //
 bay.whiteboard.geometry.Line = function(){
@@ -329,6 +393,19 @@ bay.whiteboard.geometry.LineGeneral.prototype.recalc = function(){
   this.recalcDependat();
 }
 
+bay.whiteboard.geometry.LineGeneral.prototype.toJson = function(list, id){
+  return '{' + this.jsonHeader(id) + ', "type": "LineGeneral", "a": ' + this.a + ', "b": ' + this.b + ', "c": ' + this.c + '}';
+}
+
+bay.whiteboard.geometry.LineGeneral.fromJson = function(item, list){
+  var line = new bay.whiteboard.geometry.LineGeneral( item.a, item.b, item.c);
+  line.restoreFromJson(item);
+  return line;
+}
+
+bay.whiteboard.Collection.setFromJsonFunc("LineGeneral", bay.whiteboard.geometry.LineGeneral.fromJson);
+
+
 // *************************************** TwoPointLine **************************************** //
 // line going through two points
 bay.whiteboard.geometry.Line_2p = function(p1, p2){
@@ -382,6 +459,19 @@ bay.whiteboard.Whiteboard.addTool(
     }
   }
 );
+
+bay.whiteboard.geometry.Line_2p.prototype.toJson = function(list, id){
+  return '{' + this.jsonHeader(id) + ', "type": "Line_2p", "p1": ' + list.indexOf(this.startPoint) + ', "p2": ' + list.indexOf(this.endPoint) + '}';
+}
+
+bay.whiteboard.geometry.Line_2p.fromJson = function(item, list){
+  var line = new bay.whiteboard.geometry.Line_2p( list[item.p1], list[item.p2]);
+  line.restoreFromJson(item);
+  return line;
+}
+
+bay.whiteboard.Collection.setFromJsonFunc("Line_2p", bay.whiteboard.geometry.Line_2p.fromJson);
+
 
 // *************************************** Segment **************************************** //
 // line segment connected two points
@@ -443,6 +533,19 @@ bay.whiteboard.geometry.Segment.prototype.draw = function(board){
     }
   }
 }
+
+bay.whiteboard.geometry.Segment.prototype.toJson = function(list, id){
+  return '{' + this.jsonHeader(id) + ', "type": "Segment", "p1": ' + list.indexOf(this.startPoint) + ', "p2": ' + list.indexOf(this.endPoint) + '}';
+}
+
+bay.whiteboard.geometry.Segment.fromJson = function(item, list){
+  var line = new bay.whiteboard.geometry.Segment( list[item.p1], list[item.p2]);
+  line.restoreFromJson(item);
+  return line;
+}
+
+bay.whiteboard.Collection.setFromJsonFunc("Segment", bay.whiteboard.geometry.Segment.fromJson);
+
 
 bay.whiteboard.geometry.Segment.prototype.getTrace = function(){
   return new bay.whiteboard.geometry.Segment(new bay.whiteboard.geometry.PointFree(this.startPoint), new bay.whiteboard.geometry.PointFree(this.endPoint));
@@ -560,6 +663,20 @@ bay.whiteboard.geometry.CircleGeneral.prototype.recalc = function(){
   this.recalcDependat();
 }
 
+bay.whiteboard.geometry.CircleGeneral.prototype.toJson = function(list, id){
+  return '{' + this.jsonHeader(id) + ', "type": "CircleGeneral", "a": ' + this.a + ', "b": ' + this.b + ', "c": ' + this.c + '}';
+}
+
+bay.whiteboard.geometry.CircleGeneral.fromJson = function(item, list){
+  var circle = new bay.whiteboard.geometry.CircleGeneral( item.a, item.b, item.c);
+  circle.restoreFromJson(item);
+  return circle;
+}
+
+bay.whiteboard.Collection.setFromJsonFunc("CircleGeneral", bay.whiteboard.geometry.CircleGeneral.fromJson);
+
+
+
 // *************************************** ThreePointsCircle **************************************** //
 // circle given by center point and two points which define radius
 bay.whiteboard.geometry.Circle_3p = function(c, p1, p2){
@@ -590,6 +707,19 @@ bay.whiteboard.geometry.Circle_3p.prototype.recalc = function(){
   }
   this.recalcDependat();
 }
+
+bay.whiteboard.geometry.Circle_3p.prototype.toJson = function(list, id){
+  return '{' + this.jsonHeader(id) + ', "type": "Circle_3p", "p1": ' + list.indexOf(this.centerPoint) + ', "p2": ' + list.indexOf(this.startPoint) + ', "p3": ' + list.indexOf(this.endPoint) + '}';
+}
+
+bay.whiteboard.geometry.Circle_3p.fromJson = function(item, list){
+  var circle = new bay.whiteboard.geometry.Circle_3p( list[item.p1], list[item.p2], list[item.p3]);
+  circle.restoreFromJson(item);
+  return circle;
+}
+
+bay.whiteboard.Collection.setFromJsonFunc("Circle_3p", bay.whiteboard.geometry.Circle_3p.fromJson);
+
 
 bay.whiteboard.Whiteboard.addTool(
   "compass", "geometry",

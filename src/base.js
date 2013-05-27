@@ -62,12 +62,23 @@ bay.whiteboard.Collection.prototype.parseJson = function(str){
 bay.whiteboard.Collection.prototype.rebuild = function(data){
   this.clear();
   for(var i=0;i<data.length;i++){
-    var func = this.getFromJsonFunc(data[i].type);
+    var func = bay.whiteboard.Collection.getFromJsonFunc(data[i].type);
     if (func)
       this.list[i] = func(data[i], this.list);
   }
   return this;
 }
+
+bay.whiteboard.Collection.fromJsonFunc = {};
+
+bay.whiteboard.Collection.getFromJsonFunc = function(type){
+  return bay.whiteboard.Collection.fromJsonFunc[type];
+}
+
+bay.whiteboard.Collection.setFromJsonFunc = function(type, func){
+  bay.whiteboard.Collection.fromJsonFunc[type] = func;
+}
+
 
 // *************************************** Element **************************************** //
 bay.whiteboard.Element = function(){
@@ -207,6 +218,18 @@ bay.whiteboard.PointFree.prototype.recalc = function(){
     this.exists = false;
   this.recalcDependat();
 }
+
+bay.whiteboard.PointFree.prototype.toJson = function(list, id){
+  return '{' + this.jsonHeader(id) + ', "type": "PointFree", "x": ' + this.x + ', "y": ' + this.y + '}';
+}
+
+bay.whiteboard.PointFree.fromJson = function(item, list){
+  var point = new bay.whiteboard.PointFree( item.x, item.y);
+  point.restoreFromJson(item);
+  return point;
+}
+
+bay.whiteboard.Collection.setFromJsonFunc("PointFree", bay.whiteboard.PointFree.fromJson);
 
 // ************************************* static methods ***************************************************//
 bay.whiteboard.getIntersection = function(obj1, obj2, x, y){
