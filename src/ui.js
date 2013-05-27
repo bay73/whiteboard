@@ -607,8 +607,4 @@ bay.whiteboard.Whiteboard.addTool(
     onClick: function(board, e) { board.showInfoDialog(e); }
   }
 );
-// **************************************** TO DO ******************************
-
-bay.whiteboard.Whiteboard.addGroup("freepainting");
-bay.whiteboard.Whiteboard.addGroup("diagram");
 

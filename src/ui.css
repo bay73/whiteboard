@@ -82,6 +82,22 @@ td.bwb_drawarea svg{
   cursor: url('image/compass-pointer.gif'),auto;
 }
 
+.bwb_toolbarButton.pencil {
+  background-image: url('image/pencil.gif');
+}
+.bwb_toolbarButton.rectangle {
+  background-image: url('image/rectangle.gif');
+}
+.bwb_toolbarButton.text {
+  background-image: url('image/text.gif');
+}
+.bwb_rectCursor {
+  cursor: url('image/rect-pointer.gif'),auto;
+}
+.bwb_textCursor {
+  cursor: url('image/text-pointer.gif'),auto;
+}
+
 .pressedButton {
   border-style: inset;
 }

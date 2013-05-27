@@ -1,4 +1,4 @@
-goog.provide('bay.whiteboard.geometry')
+goog.provide('bay.whiteboard.geometry');
 
 // *************************************** PointAtLine ******************************************* //
 bay.whiteboard.geometry.PointAtLine = function(l, t){
@@ -335,11 +335,11 @@ bay.whiteboard.geometry.Line.prototype.draw = function(board){
         var stroke = new goog.graphics.Stroke(board.properties.hover.width, board.properties.hover.color);
         board.graphics.drawPath(path, stroke, null);
       }
-      var color = board.properties.circle.color;
+      var color = board.properties.line.color;
       if (this.color){
         color = this.color;
       }
-      var stroke = new goog.graphics.Stroke(board.properties.circle.width, color);
+      var stroke = new goog.graphics.Stroke(board.properties.line.width, color);
       board.graphics.drawPath(path, stroke, null);
     }
   }
@@ -524,11 +524,11 @@ bay.whiteboard.geometry.Segment.prototype.draw = function(board){
         var stroke = new goog.graphics.Stroke(board.properties.hover.width, board.properties.hover.color);
         board.graphics.drawPath(path, stroke, null);
       }
-      var color = board.properties.circle.color;
+      var color = board.properties.line.color;
       if (this.color){
         color = this.color;
       }
-      var stroke = new goog.graphics.Stroke(board.properties.circle.width, color);
+      var stroke = new goog.graphics.Stroke(board.properties.line.width, color);
       board.graphics.drawPath(path, stroke, null);
     }
   }
