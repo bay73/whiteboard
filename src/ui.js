@@ -386,7 +386,15 @@ bay.whiteboard.Whiteboard.prototype.addDragListener = function(){
 
 bay.whiteboard.Whiteboard.prototype.addRightClickListener = function(){
   if(this.properties.events.onrightclick){
-    goog.events.listen(this.elements.drawElement, goog.events.EventType.CONTEXTMENU, this.showInfoDialog, null, this);
+    goog.events.listen(
+      this.elements.drawElement, goog.events.EventType.CONTEXTMENU,
+      function(e){
+        if (this.tool.current){
+          this.tool.current.toggleOff(this);
+        }
+        this.showInfoDialog(e);
+      },
+      null, this);
   }
 }
 
@@ -587,6 +595,14 @@ bay.whiteboard.Whiteboard.prototype.showInfo = function(x, y, list, current){
   goog.events.listen(colorButton, goog.ui.Component.EventType.ACTION, function(e){element.color=colorButton.getSelectedColor();this.redrawAll();}, null, this);
   // show the descriptor
   goog.style.showElement(infoDialog.getElement(), true);
+}
+
+bay.whiteboard.Whiteboard.prototype.clearCurrentTool = function(cursorStyle, currentProp){
+  goog.dom.classes.remove(this.elements.drawElement, cursorStyle);
+  this.tool.current[currentProp] = {};
+  this.tool.current = null;
+  this.collections.current.clear();
+  this.redrawAll();
 }
 
 bay.whiteboard.Whiteboard.addTool("zoom-in", null, { action: function(board, e) { board.zoomIn();} });

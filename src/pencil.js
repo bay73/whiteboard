@@ -1,5 +1,89 @@
 goog.provide('bay.whiteboard.pencil');
 
+// *************************************** FreeLine ******************************************* //
+bay.whiteboard.pencil.FreeLine = function(p1, p2){
+  bay.whiteboard.geometry.Segment.call(this, p1, p2);
+}
+
+goog.inherits(bay.whiteboard.pencil.FreeLine, bay.whiteboard.geometry.Segment);
+
+bay.whiteboard.pencil.FreeLine.prototype.draw = function(board){
+  // draw segment if it exists and intersectthe area
+  if(!this.exists) return;
+  var val = this.getMinAndMaxParamValue(board.area);
+  if (val && val.max > 0 && val.min < 1){
+    // bound drawing with ends of segment
+    if (val.min < 0) val.min = 0;
+    if (val.max > 1) val.max = 1;
+    var coords = board.transform([this.startPoint.x + val.min * this.direction.x, this.startPoint.y + val.min * this.direction.y,
+                                  this.startPoint.x + val.max * this.direction.x, this.startPoint.y + val.max * this.direction.y]);
+    var path = new goog.graphics.Path();
+    path.moveTo( coords[0], coords[1] );
+    path.lineTo( coords[2], coords[3] );
+    if (this.current){
+      var stroke = new goog.graphics.Stroke(board.properties.current.width, board.properties.current.color);
+      board.graphics.drawPath(path, stroke, null);
+    } else {
+      if (this.hover){
+        var stroke = new goog.graphics.Stroke(board.properties.hover.width, board.properties.hover.color);
+        board.graphics.drawPath(path, stroke, null);
+      }
+      var color = board.properties.freeline.color;
+      if (this.color){
+        color = this.color;
+      }
+      var stroke = new goog.graphics.Stroke(board.properties.freeline.width, color);
+      board.graphics.drawPath(path, stroke, null);
+    }
+  }
+}
+
+bay.whiteboard.Whiteboard.properties.freeline = {
+  width: 2,
+  color: 'Gray'
+}
+
+
+bay.whiteboard.pencil.FreeLine.prototype.toJson = function(list, id){
+  return '{' + this.jsonHeader(id) + ', "type": "PencilFreeLine", "p1": ' + list.indexOf(this.startPoint) + ', "p2": ' + list.indexOf(this.endPoint) + '}';
+}
+
+bay.whiteboard.pencil.FreeLine.fromJson = function(item, list){
+  var line = new bay.whiteboard.geometry.Segment( list[item.p1], list[item.p2]);
+  line.restoreFromJson(item);
+  return line;
+}
+
+bay.whiteboard.Collection.setFromJsonFunc("PencilFreeLine", bay.whiteboard.pencil.FreeLine.fromJson);
+
+
+bay.whiteboard.pencil.FreeLine.prototype.getTrace = function(){
+  return new bay.whiteboard.pencil.FreeLine(new bay.whiteboard.geometry.PointFree(this.startPoint), new bay.whiteboard.geometry.PointFree(this.endPoint));
+}
+
+bay.whiteboard.Whiteboard.addTool(
+  "freeline", "pencil",
+  {
+    toggleOn: function(board) { goog.dom.classes.add(board.elements.drawElement, 'bwb_pencilLineCursor'); board.tool.current.ruler = {};},
+    toggleOff: function(board) {board.clearCurrentTool('bwb_pencilLineCursor', 'ruler');},
+    onMove: function(board, e) { if (board.tool.current.ruler.endTmp) {board.tool.current.ruler.endTmp.moveTo(board.getConvertEventPos(e)); }},
+    onClick: function(board, e) {
+      var point = board.pointAtEventPosition(e);
+      if (board.tool.current.ruler.start){
+        board.collections.main.add(new bay.whiteboard.pencil.FreeLine(board.tool.current.ruler.start, point));
+      }
+      board.collections.current.clear();
+      board.tool.current.ruler.start = point;
+      board.collections.current.add(board.tool.current.ruler.endTmp = new bay.whiteboard.PointFree(point));
+      board.tool.current.ruler.endTmp.hide();
+      var line = new bay.whiteboard.pencil.FreeLine(board.tool.current.ruler.start, board.tool.current.ruler.endTmp)
+      line.current = true;
+      board.collections.current.add(line);
+      board.redrawAll();
+    }
+  }
+);
+
 // *************************************** Rectangle ******************************************* //
 bay.whiteboard.pencil.Rectangle = function(p1, p2){
   bay.whiteboard.Element.call(this);
@@ -162,8 +246,8 @@ bay.whiteboard.pencil.Rectangle.prototype.draw = function(board){
 }
 
 bay.whiteboard.Whiteboard.properties.rectangle = {
-  width: 1,
-  color: 'Black'
+  width: 2,
+  color: 'Grey'
 }
 
 
@@ -183,7 +267,7 @@ bay.whiteboard.Whiteboard.addTool(
   "rectangle", "pencil",
   {
     toggleOn: function(board) { goog.dom.classes.add(board.elements.drawElement, 'bwb_rectCursor'); board.tool.current.text = {};},
-    toggleOff: function(board) { goog.dom.classes.remove(board.elements.drawElement, 'bwb_rectCursor'); board.tool.current.text = {}; board.tool.current = null;},
+    toggleOff: function(board) {board.clearCurrentTool('bwb_rectCursor', 'text');},
     onMove: function(board, e) { if (board.tool.current.text.endTmp) {board.tool.current.text.endTmp.moveTo(board.getConvertEventPos(e)); }},
     onClick: function(board, e) {
       var point = board.pointAtEventPosition(e);
@@ -259,6 +343,107 @@ bay.whiteboard.pencil.PointAtRect.fromJson = function(item, list){
 }
 
 bay.whiteboard.Collection.setFromJsonFunc("PencilPointAtRect", bay.whiteboard.pencil.PointAtRect.fromJson);
+
+// *************************************** TwoPointsCircle **************************************** //
+// circle given by center point and two points which define radius
+bay.whiteboard.pencil.Circle = function(c, p){
+  bay.whiteboard.geometry.Circle.call(this);
+  this.centerPoint = c;
+  this.endPoint = p;
+  c.dependant.push(this);
+  p.dependant.push(this);
+  this.recalc();
+}
+
+goog.inherits(bay.whiteboard.pencil.Circle, bay.whiteboard.geometry.Circle);
+
+bay.whiteboard.pencil.Circle.prototype.deleteElement = function(){
+  this.centerPoint.deleteDependant(this);
+  this.endPoint.deleteDependant(this);
+}
+
+bay.whiteboard.pencil.Circle.prototype.recalc = function(){
+  if (!this.centerPoint || !this.endPoint || !this.centerPoint.exists || !this.endPoint.exists){
+    this.exists = false;
+  } else {
+    this.exists = true;
+    this.radius = this.centerPoint.distanceTo(this.endPoint);
+  }
+  this.recalcDependat();
+}
+
+bay.whiteboard.pencil.Circle.prototype.draw = function(board){
+  // draw circle if it exists and can touch the area
+  if(!this.exists) return;
+  if(this.centerPoint.x >= board.area.minX - this.radius &&
+    this.centerPoint.x <= board.area.maxX + this.radius &&
+    this.centerPoint.y >= board.area.minY - this.radius &&
+    this.centerPoint.y <= board.area.maxY + this.radius){
+    var coords = board.transform([this.centerPoint.x, this.centerPoint.y]);
+    if (this.current){
+      var stroke = new goog.graphics.Stroke(board.properties.current.width, board.properties.current.color);
+      board.graphics.drawCircle(coords[0], coords[1], this.radius * board.area.transformation.getScaleX(), stroke, null);
+    } else {
+      if (this.hover){
+        var stroke = new goog.graphics.Stroke(board.properties.hover.width, board.properties.hover.color);
+        board.graphics.drawCircle(coords[0], coords[1], this.radius * board.area.transformation.getScaleX(), stroke, null);
+      }
+      var color = board.properties.pencilcircle.color;
+      if (this.color){
+        color = this.color;
+      }
+      var stroke = new goog.graphics.Stroke(board.properties.pencilcircle.width, color);
+      board.graphics.drawCircle(coords[0], coords[1], this.radius * board.area.transformation.getScaleX(), stroke, null);
+    }
+  }
+}
+
+bay.whiteboard.Whiteboard.properties.pencilcircle = {
+  width: 2,
+  color: 'Grey'
+}
+
+bay.whiteboard.pencil.Circle.prototype.toJson = function(list, id){
+  return '{' + this.jsonHeader(id) + ', "type": "PencilCircle", "p1": ' + list.indexOf(this.centerPoint) + ', "p2": ' + list.indexOf(this.startPoint) + '}';
+}
+
+bay.whiteboard.pencil.Circle.fromJson = function(item, list){
+  var circle = new bay.whiteboard.pencil.Circle( list[item.p1], list[item.p2]);
+  circle.restoreFromJson(item);
+  return circle;
+}
+
+bay.whiteboard.Collection.setFromJsonFunc("PencilCircle", bay.whiteboard.pencil.Circle.fromJson);
+
+
+bay.whiteboard.Whiteboard.addTool(
+  "pencilcircle", "pencil",
+  {
+    toggleOn: function(board) { goog.dom.classes.add(board.elements.drawElement, 'bwb_circleCursor'); board.tool.current.compass = {};},
+    toggleOff: function(board) { board.clearCurrentTool('bwb_circleCursor', 'compass'); },
+    onMove: function(board, e) {
+      if (board.tool.current.compass.endTmp) {board.tool.current.compass.endTmp.moveTo(board.getConvertEventPos(e)); }
+    },
+    onClick: function(board, e) {
+      var point = board.pointAtEventPosition(e);
+      if (board.tool.current.compass.start){
+        board.collections.main.add(new bay.whiteboard.pencil.Circle(board.tool.current.compass.start, point));
+        board.collections.current.clear();
+        board.tool.current.toggleOff(board);
+      }else{
+        board.collections.current.clear();
+        board.tool.current.compass.start = point;
+        board.collections.current.add(board.tool.current.compass.endTmp = new bay.whiteboard.PointFree(point));
+        board.tool.current.compass.endTmp.hide();
+        var circle = new bay.whiteboard.pencil.Circle(board.tool.current.compass.start, board.tool.current.compass.endTmp)
+        circle.current = true;
+        board.collections.current.add(circle);
+      }
+      board.redrawAll();
+    }
+  }
+);
+
 
 // *************************************** Text ******************************************* //
 bay.whiteboard.pencil.Text = function(r, t){
@@ -376,7 +561,7 @@ bay.whiteboard.Whiteboard.addTool(
   "text", "pencil",
   {
     toggleOn: function(board) { goog.dom.classes.add(board.elements.drawElement, 'bwb_textCursor'); board.tool.current.text = {};},
-    toggleOff: function(board) { goog.dom.classes.remove(board.elements.drawElement, 'bwb_textCursor'); board.tool.current.text = {}; board.tool.current = null;},
+    toggleOff: function(board) { board.clearCurrentTool('bwb_textCursor', 'text');},
     onMove: function(board, e) { if (board.tool.current.text.endTmp) {board.tool.current.text.endTmp.moveTo(board.getConvertEventPos(e)); }},
     onClick: function(board, e) {
       var point = board.pointAtEventPosition(e);
@@ -399,3 +584,4 @@ bay.whiteboard.Whiteboard.addTool(
     }
   }
 );
+

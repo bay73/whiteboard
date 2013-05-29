@@ -438,7 +438,7 @@ bay.whiteboard.Whiteboard.addTool(
   "ruler", "geometry",
   {
     toggleOn: function(board) { goog.dom.classes.add(board.elements.drawElement, 'bwb_rulerCursor'); board.tool.current.ruler = {};},
-    toggleOff: function(board) { goog.dom.classes.remove(board.elements.drawElement, 'bwb_rulerCursor'); board.tool.current.ruler = {}; board.tool.current = null;},
+    toggleOff: function(board) { board.clearCurrentTool('bwb_rulerCursor', 'ruler');},
     onMove: function(board, e) { if (board.tool.current.ruler.endTmp) {board.tool.current.ruler.endTmp.moveTo(board.getConvertEventPos(e)); }},
     onClick: function(board, e) {
       var point = board.pointAtEventPosition(e);
@@ -555,7 +555,7 @@ bay.whiteboard.Whiteboard.addTool(
   "segment", "geometry",
   {
     toggleOn: function(board) { goog.dom.classes.add(board.elements.drawElement, 'bwb_rulerCursor'); board.tool.current.ruler = {};},
-    toggleOff: function(board) { goog.dom.classes.remove(board.elements.drawElement, 'bwb_rulerCursor'); board.tool.current.ruler = {}; board.tool.current = null;},
+    toggleOff: function(board) { board.clearCurrentTool('bwb_rulerCursor', 'ruler');},
     onMove: function(board, e) { if (board.tool.current.ruler.endTmp) {board.tool.current.ruler.endTmp.moveTo(board.getConvertEventPos(e)); }},
     onClick: function(board, e) {
       var point = board.pointAtEventPosition(e);
@@ -725,7 +725,7 @@ bay.whiteboard.Whiteboard.addTool(
   "compass", "geometry",
   {
     toggleOn: function(board) { goog.dom.classes.add(board.elements.drawElement, 'bwb_compassCursor'); board.tool.current.compass = {};},
-    toggleOff: function(board) { goog.dom.classes.remove(board.elements.drawElement, 'bwb_compassCursor'); board.tool.current.compass = {}; board.tool.current = null;},
+    toggleOff: function(board) { board.clearCurrentTool('bwb_compassCursor', 'compass');},
     onMove: function(board, e) {
       if (board.tool.current.compass.centerTmp) {board.tool.current.compass.centerTmp.moveTo(board.getConvertEventPos(e)); }
       else if (board.tool.current.compass.endTmp) {board.tool.current.compass.endTmp.moveTo(board.getConvertEventPos(e)); }
@@ -762,7 +762,7 @@ bay.whiteboard.Whiteboard.addTool(
   "circle", "geometry",
   {
     toggleOn: function(board) { goog.dom.classes.add(board.elements.drawElement, 'bwb_compassCursor'); board.tool.current.compass = {};},
-    toggleOff: function(board) { goog.dom.classes.remove(board.elements.drawElement, 'bwb_compassCursor'); board.tool.current.compass = {}; board.tool.current = null;},
+    toggleOff: function(board) { board.clearCurrentTool('bwb_compassCursor', 'compass');},
     onMove: function(board, e) {
       if (board.tool.current.compass.endTmp) {board.tool.current.compass.endTmp.moveTo(board.getConvertEventPos(e)); }
     },
