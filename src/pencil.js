@@ -1,5 +1,9 @@
 goog.provide('bay.whiteboard.pencil');
 
+goog.require('bay.whiteboard')
+goog.require('bay.whiteboard.Collection')
+goog.require('bay.whiteboard.geometry');
+
 // *************************************** FreeLine ******************************************* //
 bay.whiteboard.pencil.FreeLine = function(p1, p2){
   bay.whiteboard.geometry.Segment.call(this, p1, p2);
@@ -554,7 +558,7 @@ bay.whiteboard.pencil.Text.prototype.draw = function(board){
 bay.whiteboard.Whiteboard.properties.text = {
   width: 1,
   color: 'DarkBlue',
-  font:  'Times',
+  font:  'Times'
 }
 
 bay.whiteboard.pencil.Text.prototype.toJson = function(list, id){

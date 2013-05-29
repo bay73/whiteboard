@@ -1,0 +1,1 @@
+..\closure-library\closure\bin\build\closurebuilder.py --root=..\closure-library\ --root=src\ --namespace="bay.whiteboard.Collection" --namespace="bay.whiteboard" --namespace="bay.whiteboard.geometry" --namespace="bay.whiteboard.pencil" --output_mode=compiled --compiler_jar=compiler.jar --output_file=bin\whiteboard.js

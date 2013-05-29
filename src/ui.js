@@ -1,5 +1,7 @@
 goog.provide('bay.whiteboard')
 
+goog.require('bay.whiteboard.Collection')
+
 goog.require('goog.dom');
 goog.require('goog.dom.ViewportSizeMonitor');
 goog.require('goog.object');
@@ -98,12 +100,12 @@ bay.whiteboard.Whiteboard.prototype.render = function(container){
     this.container = container;
 
   // create whiteboard layout - table with two cells
-  this.elements.toolbarElement = goog.dom.createDom('td', {class: 'bwb_toolbar'}, ' ');
-  this.elements.drawElement = goog.dom.createDom('td', {class: 'bwb_drawarea'}, ' ');
+  this.elements.toolbarElement = goog.dom.createDom('td', 'bwb_toolbar', ' ');
+  this.elements.drawElement = goog.dom.createDom('td', 'bwb_drawarea', ' ');
   layout = goog.dom.createDom(
     'table',
-    {class: 'bwb_layout'},
-    goog.dom.createDom('tr', {class: 'bwb_layout'}, this.elements.toolbarElement, this.elements.drawElement )
+    'bwb_layout',
+    goog.dom.createDom('tr', 'bwb_layout', this.elements.toolbarElement, this.elements.drawElement )
   );
   goog.dom.appendChild(this.container, layout);
   this.addButtons();
@@ -475,7 +477,7 @@ bay.whiteboard.Whiteboard.prototype.addButtons = function(){
     board.tool.groups.push( group );
     group.button = createButton(group.id, group);
     // new tool box
-    group.toolBox = goog.dom.createDom('div', {class: 'bwb_toolbox'}, ' ');
+    group.toolBox = goog.dom.createDom('div', 'bwb_toolbox', ' ');
     goog.dom.appendChild(this.container, group.toolBox);
     goog.style.showElement(group.toolBox, false);
     // group actions

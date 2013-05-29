@@ -1,5 +1,8 @@
 goog.provide('bay.whiteboard.geometry');
 
+goog.require('bay.whiteboard')
+goog.require('bay.whiteboard.Collection')
+
 // *************************************** PointAtLine ******************************************* //
 bay.whiteboard.geometry.PointAtLine = function(l, t){
   bay.whiteboard.Point.call(this);
