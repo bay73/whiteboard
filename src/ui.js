@@ -17,6 +17,7 @@ goog.require('goog.ui.ColorMenuButton');
 goog.require('goog.ui.CustomColorPalette');
 goog.require('goog.ui.KeyboardShortcutHandler');
 goog.require('goog.events.MouseWheelHandler');
+goog.require('goog.net.WebSocket');
 
 // ******************************* constructor ***********************************//
 bay.whiteboard.Create = function(){
@@ -135,6 +136,31 @@ bay.whiteboard.Whiteboard.prototype.getGraphics = function(){
 }
 
 // ********************************** utilities ***********************************
+bay.whiteboard.Whiteboard.prototype.linkWebSocket = function(url){
+  this.ws_  = new goog.net.WebSocket();
+  var onWsOpen = function(e){
+  };
+  var onWsMessage = function(e){
+    this.collections.main.acceptJsonStr(e.message);
+    this.redrawAll();
+  };
+  var onWsError = function(e){
+    this.ws_.close();
+  };
+  var onWsClose = function(e){
+    this.ws_.dispose();
+  };
+  this.ws_.addEventListener(goog.net.WebSocket.EventType.OPENED, onWsOpen, false, this);
+  this.ws_.addEventListener(goog.net.WebSocket.EventType.MESSAGE, onWsMessage, false, this);
+  this.ws_.addEventListener(goog.net.WebSocket.EventType.CLOSED, onWsClose, false, this);
+  this.ws_.addEventListener(goog.net.WebSocket.EventType.ERROR, onWsError, false, this);
+  this.ws_.open(url);
+  var board = this;
+  this.collections.main.onChange = function(e){
+    board.ws_.send(this.getJson(e));
+  }
+}
+
 bay.whiteboard.Whiteboard.prototype.getHoverDist = function(){
   return this.properties.hover.dist / this.area.transformation.getScaleX();
 }
@@ -566,7 +592,7 @@ bay.whiteboard.Whiteboard.prototype.showInfo = function(x, y, list, current){
     var label = new goog.ui.BidiInput();
     infoDialog.addChild(label, true);
     label.setValue(element.label);
-    goog.events.listen(label.getElement(), goog.ui.Component.EventType.BLUR, function(){element.label = label.getValue();}, null, this);
+    goog.events.listen(label.getElement(), goog.ui.Component.EventType.BLUR, function(){element.setLabel(label.getValue());}, null, this);
     goog.dom.classes.add(label.getElement(), 'bwb_labelInput');
   }
   // button to hide element
@@ -582,7 +608,7 @@ bay.whiteboard.Whiteboard.prototype.showInfo = function(x, y, list, current){
   infoDialog.addChild(traceCbLabel, true);
   goog.dom.classes.add(traceCbLabel.getElement(), 'bwb_traceCheck');
   goog.dom.classes.add(traceCb.getElement(), 'bwb_traceCheck');
-  goog.events.listen(traceCb, goog.ui.Component.EventType.CHANGE, function(e){element.trace = traceCb.isChecked(); this.redrawAll();}, null, this);
+  goog.events.listen(traceCb, goog.ui.Component.EventType.CHANGE, function(e){element.setTrace(traceCb.isChecked()); this.redrawAll();}, null, this);
   // button to colorize element
   var colorButton = new goog.ui.ColorMenuButton('Color');
   colorButton.setTooltip('Click to select color');
@@ -592,7 +618,7 @@ bay.whiteboard.Whiteboard.prototype.showInfo = function(x, y, list, current){
     colorButton.setSelectedColor('#000000');
   infoDialog.addChild(colorButton, true);
   goog.dom.classes.add(colorButton.getElement(), 'bwb_colorButton');
-  goog.events.listen(colorButton, goog.ui.Component.EventType.ACTION, function(e){element.color=colorButton.getSelectedColor();this.redrawAll();}, null, this);
+  goog.events.listen(colorButton, goog.ui.Component.EventType.ACTION, function(e){element.setColor(colorButton.getSelectedColor());this.redrawAll();}, null, this);
   // show the descriptor
   goog.style.showElement(infoDialog.getElement(), true);
 }

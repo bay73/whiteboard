@@ -15,11 +15,15 @@ bay.whiteboard.Collection.prototype.clear = function(){
       this.list[i].deleteElement();
   }
   this.list = [];
+  if (this.onClear)
+    this.onClear(e);
   return this;
 }
 
 bay.whiteboard.Collection.prototype.add = function(e){
+  e.collection = this;
   this.list.push(e);
+  this.onChange(e);
   return this.list.length;
 }
 
@@ -37,6 +41,10 @@ bay.whiteboard.Collection.prototype.getNeighbourList = function(p, d, onlyVisibl
   if (sorted)
     neighbourList.sort(function(a,b){return a.distance - b.distance;});
   return neighbourList;
+}
+
+bay.whiteboard.Collection.prototype.getJson = function(element){
+  return element.toJson(this.list, this.list.indexOf(element));
 }
 
 
@@ -65,6 +73,22 @@ bay.whiteboard.Collection.prototype.rebuild = function(data){
     var func = bay.whiteboard.Collection.getFromJsonFunc(data[i].type);
     if (func)
       this.list[i] = func(data[i], this.list);
+      this.onChange(this.list[i]);
+  }
+  return this;
+}
+
+bay.whiteboard.Collection.prototype.acceptJsonStr = function(str){
+  var data = eval('(' + str + ')');
+  var id = data.id;
+  if (!this.list[id]){
+    var func = bay.whiteboard.Collection.getFromJsonFunc(data.type);
+    if (func){
+      this.list[id] = func(data, this.list);
+      this.list[id].collection = this;
+    }
+  } else {
+    this.list[id].acceptData(data);
   }
   return this;
 }
@@ -79,6 +103,8 @@ bay.whiteboard.Collection.setFromJsonFunc = function(type, func){
   bay.whiteboard.Collection.fromJsonFunc[type] = func;
 }
 
+bay.whiteboard.Collection.prototype.onChange = function(element){
+}
 
 // *************************************** Element **************************************** //
 bay.whiteboard.Element = function(){
@@ -97,6 +123,12 @@ bay.whiteboard.Element.prototype.recalcDependat = function(){
 }
 
 bay.whiteboard.Element.prototype.deleteElement = function(){
+}
+
+bay.whiteboard.Element.prototype.onChange = function(){
+  if (this.collection){
+    this.collection.onChange(this);
+  }
 }
 
 bay.whiteboard.Element.prototype.deleteDependant = function(obj){
@@ -128,6 +160,13 @@ bay.whiteboard.Element.prototype.restoreFromJson = function(item){
   if (item.trace) this.trace = true;
 }
 
+bay.whiteboard.Element.prototype.acceptData = function(item){
+  if (item.label) this.label = item.label;
+  if (item.hidden) this.hidden = true;
+  if (item.color) this.color = item.color;
+  if (item.trace) this.trace = true;
+}
+
 bay.whiteboard.Vector = function(x, y){
   if (x instanceof bay.whiteboard.Vector || x instanceof bay.whiteboard.Point){
     this.x = x.x;
@@ -140,10 +179,27 @@ bay.whiteboard.Vector = function(x, y){
 
 bay.whiteboard.Element.prototype.hide = function(){
   this.hidden = true;
+  this.onChange();
 }
 
 bay.whiteboard.Element.prototype.show = function(){
   this.hidden = false;
+  this.onChange();
+}
+
+bay.whiteboard.Element.prototype.setLabel = function(label){
+  this.label = label;
+  this.onChange();
+}
+
+bay.whiteboard.Element.prototype.setTrace = function(trace){
+  this.trace = trace;
+  this.onChange();
+}
+
+bay.whiteboard.Element.prototype.setColor = function(color){
+  this.color = color;
+  this.onChange();
 }
 // *************************************** Point ******************************************* //
 bay.whiteboard.Point = function(){
@@ -208,6 +264,13 @@ goog.inherits(bay.whiteboard.PointFree, bay.whiteboard.Point);
 
 bay.whiteboard.PointFree.prototype.moveTo = function(x, y){
   bay.whiteboard.Vector.call(this, x, y);
+  this.recalc();
+  this.onChange();
+}
+
+bay.whiteboard.PointFree.prototype.acceptData = function(data){
+  bay.whiteboard.PointFree.superClass_.acceptData.call(this, data);
+  bay.whiteboard.Vector.call(this, data.x, data.y);
   this.recalc();
 }
 

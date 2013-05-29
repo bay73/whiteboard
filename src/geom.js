@@ -17,6 +17,16 @@ bay.whiteboard.geometry.PointAtLine.prototype.moveTo = function(x, y){
     this.param = point.param;
   }
   this.recalc();
+  this.onChange();
+}
+
+bay.whiteboard.geometry.PointAtLine.prototype.acceptData = function(data){
+  bay.whiteboard.geometry.PointAtLine.superClass_.acceptData.call(this, data);
+  if (this.obj){
+    var point = this.obj.closestPoint(data.x, data.y);
+    this.param = point.param;
+  }
+  this.recalc();
 }
 
 bay.whiteboard.geometry.PointAtLine.prototype.recalc = function(){
@@ -60,7 +70,18 @@ bay.whiteboard.geometry.PointAtCircle.prototype.moveTo = function(x, y){
     this.direction = point.direction;
   }
   this.recalc();
+  this.onChange();
 }
+
+bay.whiteboard.geometry.PointAtCircle.prototype.acceptData = function(data){
+  bay.whiteboard.geometry.PointAtCircle.superClass_.acceptData.call(this, data);
+  if (this.obj){
+    var point = this.obj.closestPoint(data.x, data.y);
+    this.direction = point.direction;
+  }
+  this.recalc();
+}
+
 
 bay.whiteboard.geometry.PointAtCircle.prototype.recalc = function(){
   if(!this.obj || !this.obj.exists || !this.direction){
@@ -83,7 +104,7 @@ bay.whiteboard.geometry.PointAtCircle.prototype.toJson = function(list, id){
 }
 
 bay.whiteboard.geometry.PointAtCircle.fromJson = function(item, list){
-  var point = new bay.whiteboard.geometry.PointAtCircle( list[item.obj], new bay.whiteboard.geometry.Vector(item.x, item.y));
+  var point = new bay.whiteboard.geometry.PointAtCircle( list[item.obj], new bay.whiteboard.Vector(item.x, item.y));
   point.restoreFromJson(item);
   return point;
 }
@@ -269,6 +290,7 @@ bay.whiteboard.geometry.Line = function(){
   bay.whiteboard.Element.call(this);
   this.startPoint = null;
   this.direction = null;
+  this.noLabel = true;
 }
 
 goog.inherits(bay.whiteboard.geometry.Line, bay.whiteboard.Element);
@@ -582,6 +604,7 @@ bay.whiteboard.geometry.Circle = function(){
   bay.whiteboard.Element.call(this);
   this.centerPoint = null;
   this.radius = null;
+  this.noLabel = true;
 }
 
 goog.inherits(bay.whiteboard.geometry.Circle, bay.whiteboard.Element);

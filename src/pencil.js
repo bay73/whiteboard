@@ -97,6 +97,7 @@ bay.whiteboard.pencil.Rectangle = function(p1, p2){
     top: null,
     bottom: null
   }
+  this.noLabel = true;
   this.recalc();
 }
 
@@ -308,6 +309,17 @@ bay.whiteboard.pencil.PointAtRect.prototype.moveTo = function(x, y){
     this.param = point.param;
   }
   this.recalc();
+  this.onChange();
+}
+
+bay.whiteboard.pencil.PointAtRect.prototype.acceptData = function(data){
+  bay.whiteboard.pencil.PointAtRect.superClass_.acceptData.call(this, data);
+  if (this.obj){
+    var point = this.obj.closestPoint(data.x, data.y);
+    this.side = point.side;
+    this.param = point.param;
+  }
+  this.recalc();
 }
 
 bay.whiteboard.pencil.PointAtRect.prototype.recalc = function(){
@@ -404,7 +416,7 @@ bay.whiteboard.Whiteboard.properties.pencilcircle = {
 }
 
 bay.whiteboard.pencil.Circle.prototype.toJson = function(list, id){
-  return '{' + this.jsonHeader(id) + ', "type": "PencilCircle", "p1": ' + list.indexOf(this.centerPoint) + ', "p2": ' + list.indexOf(this.startPoint) + '}';
+  return '{' + this.jsonHeader(id) + ', "type": "PencilCircle", "p1": ' + list.indexOf(this.centerPoint) + ', "p2": ' + list.indexOf(this.endPoint) + '}';
 }
 
 bay.whiteboard.pencil.Circle.fromJson = function(item, list){
