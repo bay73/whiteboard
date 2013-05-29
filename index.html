@@ -1,0 +1,17 @@
+<!DOCTYPE html>
+<html style="height:100%;">
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+  <title>Smart Whiteboard</title>
+  <script src="whiteboard.js"></script>
+  <link rel="stylesheet" href="goog.css">
+  <link rel="stylesheet" href="whiteboard.css">
+</head>
+<body style="height:94%;">
+  <div id="whiteboard" style = "width:100%; height:100%;"></div>
+</body>
+</html>
+<script type="text/javascript">
+  whiteboard = bay.whiteboard.Create();
+  whiteboard.render(document.getElementById('whiteboard'));
+</script>
