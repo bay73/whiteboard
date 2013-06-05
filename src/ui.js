@@ -630,6 +630,10 @@ bay.whiteboard.Whiteboard.prototype.clearCurrentTool = function(cursorStyle, cur
   this.redrawAll();
 }
 
+bay.whiteboard.Whiteboard.addTool("coordinates", "tools", { action: function(board, e) { board.zoomIn();} });
+bay.whiteboard.Whiteboard.addTool("eraseAll", "tools", { action: function(board, e) { board.collections.main.clear();board.collections.tracer.clear(); board.redrawAll();} });
+bay.whiteboard.Whiteboard.addTool("eraseTrace", "tools", { action: function(board, e) { board.collections.tracer.clear(); board.redrawAll();} });
+
 bay.whiteboard.Whiteboard.addTool("zoom-in", null, { action: function(board, e) { board.zoomIn();} });
 
 bay.whiteboard.Whiteboard.addTool("zoom-out", null, { action: function(board, e) { board.zoomOut();} });

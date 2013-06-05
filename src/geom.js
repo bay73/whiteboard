@@ -384,7 +384,7 @@ bay.whiteboard.geometry.Line.prototype.draw = function(board){
 
 bay.whiteboard.geometry.Line.prototype.getTrace = function(){
   var tracer = new bay.whiteboard.geometry.Line();
-  tracer.startPoint = new bay.whiteboard.geometry.PointFree(this.startPoint);
+  tracer.startPoint = new bay.whiteboard.PointFree(this.startPoint);
   tracer.direction = new bay.whiteboard.Vector(this.direction);
   return tracer;
 }
@@ -585,7 +585,7 @@ bay.whiteboard.Collection.setFromJsonFunc("Segment", bay.whiteboard.geometry.Seg
 
 
 bay.whiteboard.geometry.Segment.prototype.getTrace = function(){
-  return new bay.whiteboard.geometry.Segment(new bay.whiteboard.geometry.PointFree(this.startPoint), new bay.whiteboard.geometry.PointFree(this.endPoint));
+  return new bay.whiteboard.geometry.Segment(new bay.whiteboard.PointFree(this.startPoint), new bay.whiteboard.PointFree(this.endPoint));
 }
 
 bay.whiteboard.Whiteboard.addTool(

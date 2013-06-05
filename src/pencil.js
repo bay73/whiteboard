@@ -62,7 +62,7 @@ bay.whiteboard.Collection.setFromJsonFunc("PencilFreeLine", bay.whiteboard.penci
 
 
 bay.whiteboard.pencil.FreeLine.prototype.getTrace = function(){
-  return new bay.whiteboard.pencil.FreeLine(new bay.whiteboard.geometry.PointFree(this.startPoint), new bay.whiteboard.geometry.PointFree(this.endPoint));
+  return new bay.whiteboard.pencil.FreeLine(new bay.whiteboard.PointFree(this.startPoint), new bay.whiteboard.PointFree(this.endPoint));
 }
 
 bay.whiteboard.Whiteboard.addTool(

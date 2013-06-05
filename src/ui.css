@@ -60,6 +60,18 @@ td.bwb_drawarea svg{
 .bwb_toolbarButton.zoom-out {
   background-image: url('image/zoom-out.gif');
 }
+.bwb_toolbarButton.tools {
+  background-image: url('image/tools.gif');
+}
+.bwb_toolbarButton.coordinates {
+  background-image: url('image/coordinates.gif');
+}
+.bwb_toolbarButton.eraseAll {
+  background-image: url('image/trash.gif');
+}
+.bwb_toolbarButton.eraseTrace {
+  background-image: url('image/eraser.gif');
+}
 .bwb_toolbarButton.geometry {
   background-image: url('image/ruler_compass.gif');
 }
