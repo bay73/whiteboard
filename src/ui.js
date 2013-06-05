@@ -159,7 +159,8 @@ bay.whiteboard.Whiteboard.prototype.linkWebSocket = function(url){
   this.ws_.open(url);
   var board = this;
   this.collections.main.onChange = function(e){
-    board.ws_.send(this.getJson(e));
+    if (board.ws_.isOpen())
+      board.ws_.send(this.getJson(e));
   }
 }
 
@@ -298,7 +299,7 @@ bay.whiteboard.Whiteboard.prototype.pointAtEventPosition = function(e){
       if (list[i].distance >= minDist) break;
       for(var j=i + 1;j<list.length;j++){
         var newPoint = bay.whiteboard.getIntersection(list[i].element, list[j].element, coords);
-        if (newPoint.isExists()){
+        if (newPoint && newPoint.isExists()){
           var dist = newPoint.distance(coords);
           if (dist <= minDist){
             point = newPoint;
@@ -373,12 +374,8 @@ bay.whiteboard.Whiteboard.prototype.addWheelListener = function(){
 bay.whiteboard.Whiteboard.prototype.addClickListener = function(){
   if(this.properties.events.onclick){
     var clickHandler = function(e){
-      // find or add point at click position
       if (this.tool.current && this.tool.current.onClick){
         this.tool.current.onClick(this, e);
-      } else {
-        var point = this.pointAtEventPosition(e);
-        this.redrawAll();
       }
       e.preventDefault();
     }

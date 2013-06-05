@@ -219,7 +219,7 @@ bay.whiteboard.pencil.Rectangle.prototype.recalc = function(){
   } else {
     this.exists = false;
   }
-  this.recalcDependat();
+  this.recalcDependant();
 }
 
 bay.whiteboard.pencil.Rectangle.prototype.draw = function(board){
@@ -345,7 +345,7 @@ bay.whiteboard.pencil.PointAtRect.prototype.recalc = function(){
       this.y = this.obj.pos.bottom;
     }
   }
-  this.recalcDependat();
+  this.recalcDependant();
 }
 
 bay.whiteboard.pencil.PointAtRect.prototype.toJson = function(list, id){
@@ -385,7 +385,7 @@ bay.whiteboard.pencil.Circle.prototype.recalc = function(){
     this.exists = true;
     this.radius = this.centerPoint.distanceTo(this.endPoint);
   }
-  this.recalcDependat();
+  this.recalcDependant();
 }
 
 bay.whiteboard.pencil.Circle.prototype.draw = function(board){
@@ -499,7 +499,7 @@ bay.whiteboard.pencil.Text.prototype.recalc = function(){
   } else {
     this.exists = false;
   }
-  this.recalcDependat();
+  this.recalcDependant();
 }
 
 bay.whiteboard.pencil.Text.prototype.width = function(font, size) {

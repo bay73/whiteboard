@@ -40,7 +40,7 @@ bay.whiteboard.geometry.PointAtLine.prototype.recalc = function(){
     this.x = this.obj.startPoint.x + this.obj.direction.x * this.param;
     this.y = this.obj.startPoint.y + this.obj.direction.y * this.param;
   }
-  this.recalcDependat();
+  this.recalcDependant();
 }
 
 bay.whiteboard.geometry.PointAtLine.prototype.toJson = function(list, id){
@@ -99,7 +99,7 @@ bay.whiteboard.geometry.PointAtCircle.prototype.recalc = function(){
       this.exists = false;
     }
   }
-  this.recalcDependat();
+  this.recalcDependant();
 }
 
 bay.whiteboard.geometry.PointAtCircle.prototype.toJson = function(list, id){
@@ -151,7 +151,7 @@ bay.whiteboard.geometry.Point_2l.prototype.recalc = function(){
       this.y = this.obj2.startPoint.y + b1 * t;
     }
   }
-  this.recalcDependat();
+  this.recalcDependant();
 }
 
 bay.whiteboard.geometry.Point_2l.prototype.toJson = function(list, id){
@@ -214,7 +214,7 @@ bay.whiteboard.geometry.Point_2c.prototype.recalc = function(){
       }
     }
   }
-  this.recalcDependat();
+  this.recalcDependant();
 }
 
 bay.whiteboard.geometry.Point_2c.prototype.toJson = function(list, id){
@@ -271,7 +271,7 @@ bay.whiteboard.geometry.Point_lc.prototype.recalc = function(){
       this.y = this.obj1.startPoint.y + t * this.obj1.direction.y;
     }
   }
-  this.recalcDependat();
+  this.recalcDependant();
 }
 
 bay.whiteboard.geometry.Point_lc.prototype.toJson = function(list, id){
@@ -286,6 +286,18 @@ bay.whiteboard.geometry.Point_lc.fromJson = function(item, list){
 
 bay.whiteboard.Collection.setFromJsonFunc("Point_lc", bay.whiteboard.geometry.Point_lc.fromJson);
 
+bay.whiteboard.Whiteboard.addTool(
+  "point", "geometry",
+  {
+    toggleOn: function(board) { goog.dom.classes.add(board.elements.drawElement, 'bwb_pointCursor'); board.tool.current.point = {};},
+    toggleOff: function(board) { board.clearCurrentTool('bwb_pointCursor', 'point');},
+    onClick: function(board, e) {
+      var point = board.pointAtEventPosition(e);
+      board.tool.current.toggleOff(board);
+      board.redrawAll();
+    }
+  }
+);
 
 
 // *************************************** Line **************************************** //
@@ -415,7 +427,7 @@ bay.whiteboard.geometry.LineGeneral.prototype.recalc = function(){
   } else {
     this.exists = false;
   }
-  this.recalcDependat();
+  this.recalcDependant();
 }
 
 bay.whiteboard.geometry.LineGeneral.prototype.toJson = function(list, id){
@@ -456,7 +468,7 @@ bay.whiteboard.geometry.Line_2p.prototype.recalc = function(){
     this.exists = true;
     this.direction = new bay.whiteboard.Vector(this.endPoint.x - this.startPoint.x, this.endPoint.y - this.startPoint.y);
   }
-  this.recalcDependat();
+  this.recalcDependant();
 }
 
 bay.whiteboard.Whiteboard.addTool(
@@ -686,7 +698,7 @@ bay.whiteboard.geometry.CircleGeneral.prototype.recalc = function(){
   } else {
     this.exists = false;
   }
-  this.recalcDependat();
+  this.recalcDependant();
 }
 
 bay.whiteboard.geometry.CircleGeneral.prototype.toJson = function(list, id){
@@ -731,7 +743,7 @@ bay.whiteboard.geometry.Circle_3p.prototype.recalc = function(){
     this.exists = true;
     this.radius = this.startPoint.distanceTo(this.endPoint);
   }
-  this.recalcDependat();
+  this.recalcDependant();
 }
 
 bay.whiteboard.geometry.Circle_3p.prototype.toJson = function(list, id){

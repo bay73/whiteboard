@@ -63,6 +63,9 @@ td.bwb_drawarea svg{
 .bwb_toolbarButton.geometry {
   background-image: url('image/ruler_compass.gif');
 }
+.bwb_toolbarButton.point {
+  background-image: url('image/point.gif');
+}
 .bwb_toolbarButton.ruler {
   background-image: url('image/line.gif');
 }
@@ -74,6 +77,9 @@ td.bwb_drawarea svg{
 }
 .bwb_toolbarButton.circle {
   background-image: url('image/circle2.gif');
+}
+.bwb_pointCursor {
+  cursor: url('image/point-pointer.gif'),auto;
 }
 .bwb_rulerCursor {
   cursor: url('image/ruler-pointer.gif'),auto;
