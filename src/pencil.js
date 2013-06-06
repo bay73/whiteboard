@@ -5,6 +5,136 @@ goog.require('bay.whiteboard.Collection')
 goog.require('bay.whiteboard.geometry');
 
 bay.whiteboard.Whiteboard.addGroup("pencil", 5, "Free hand drawing");
+
+// *************************************** Curve ******************************************* //
+bay.whiteboard.pencil.Curve = function(p){
+  bay.whiteboard.Element.call(this);
+  this.startPoint=p;
+  this.points = [];
+  this.pos={left: p.x, right: p.x, top: p.y, bottom: p.y};
+  this.exists = true;
+}
+goog.inherits(bay.whiteboard.pencil.Curve, bay.whiteboard.Element);
+
+bay.whiteboard.pencil.Curve.prototype.addPoint = function(p){
+  this.points.push(new bay.whiteboard.Vector(p.x - this.startPoint.x, p.y - this.startPoint.y));
+  if (p.x < this.pos.left) this.pos.left = p.x;
+  if (p.x > this.pos.right) this.pos.right = p.x;
+  if (p.y > this.pos.top) this.pos.top = p.y;
+  if (p.y < this.pos.bottom) this.pos.bottom = p.y;
+}
+bay.whiteboard.pencil.Curve.prototype.toString = function(){
+  if(!this.exists) return 'Curve does not exists';
+  return 'Curve';
+}
+bay.whiteboard.pencil.Curve.prototype.distance = function(x, y){
+  var to = new bay.whiteboard.Vector(x,y);
+  var d = this.startPoint.distance(to);
+  to = new bay.whiteboard.Vector(to.x - this.startPoint.x,to.y - this.startPoint.y);
+  for(var i = 0; i<this.points.length; i++){
+    var nextD = this.points[i].distance(to);
+    if (nextD < d) d = nextD;
+  }
+  return d;
+}
+bay.whiteboard.pencil.Curve.prototype.recalc = function(){
+  if(this.startPoint != null && this.startPoint.exists){
+    this.exists = true;
+    this.pos={left: this.startPoint.x, right: this.startPoint.x, top: this.startPoint.y, bottom: this.startPoint.y};
+    for(var i = 0; i<this.points.length; i++){
+      var p = this.points[i];
+      if (p.x < this.pos.left) this.pos.left = p.x;
+      if (p.x > this.pos.right) this.pos.right = p.x;
+      if (p.y > this.pos.top) this.pos.top = p.y;
+      if (p.y < this.pos.bottom) this.pos.bottom = p.y;
+    }
+  } else {
+    this.exists = false;
+  }
+  this.recalcDependant();
+}
+
+bay.whiteboard.pencil.Curve.prototype.draw = function(board){
+  if(!this.exists) return;
+  var coords = board.transform([this.startPoint.x, this.startPoint.y]);
+  var path = new goog.graphics.Path();
+  path.moveTo( coords[0], coords[1] );
+  for(var i = 0; i<this.points.length; i++){
+    coords = board.transform([this.startPoint.x+this.points[i].x,this.startPoint.y+this.points[i].y]);
+    path.lineTo( coords[0], coords[1] );
+  }
+  if (this.current){
+    var stroke = new goog.graphics.Stroke(board.properties.current.width, board.properties.current.color);
+    board.graphics.drawPath(path, stroke, null);
+  }else{
+    if (this.hover){
+      var stroke = new goog.graphics.Stroke(board.properties.hover.width, board.properties.hover.color);
+      board.graphics.drawPath(path, stroke, null);
+    }
+    var color = board.properties.curve.color;
+    if (this.color){
+      color = this.color;
+    }
+    var stroke = new goog.graphics.Stroke(board.properties.curve.width, color);
+    board.graphics.drawPath(path, stroke, null);
+  }
+}
+
+bay.whiteboard.Whiteboard.properties.curve = {
+  width: 3,
+  color: 'Gray'
+}
+
+
+bay.whiteboard.pencil.Curve.prototype.toJson = function(list, id){
+  str = '{' + this.jsonHeader(id) + ', "type": "PencilCurve", "p0": ' + list.indexOf(this.startPoint);
+  for(var i = 0; i<this.points.length; i++){
+    var p = this.points[i];
+    str += ', "x'+i+'": ' + p.x + ', "y'+i+'": '+p.y;
+  }
+  return str + '}';
+}
+
+bay.whiteboard.pencil.Curve.fromJson = function(item, list){
+  var line = new bay.whiteboard.pencil.Curve( list[item.p0]);
+  var i = 0;
+  while(typeof item['x'+i] != 'undefined'){
+    line.points.push(new bay.whitboard.Vector(item['x'+i], item['y'+i]));
+  }
+  line.restoreFromJson(item);
+  return line;
+}
+
+bay.whiteboard.Collection.setFromJsonFunc("PencilCurve", bay.whiteboard.pencil.Curve.fromJson);
+
+
+bay.whiteboard.Whiteboard.addTool(
+  "curve", "pencil",
+  {
+    toggleOn: function(board) { goog.dom.classes.add(board.elements.drawElement, 'bwb_curveCursor'); board.tool.current.curve = {};},
+    toggleOff: function(board) {board.clearCurrentTool('bwb_curveCursor', 'curve');},
+    onMove: function(board, e) {
+      if (board.tool.current.curve.start){
+        var coords = board.getConvertEventPos(e);
+        board.tool.current.curve.start.addPoint(coords);
+      }
+    },
+    onClick: function(board, e) {
+      if (board.tool.current.curve.start){
+        board.tool.current.toggleOff(board);
+      }else{
+        var point = board.pointAtEventPosition(e);
+        var curve = new bay.whiteboard.pencil.Curve(point);
+        board.collections.main.add(curve);
+        board.tool.current.curve.start = curve;
+      }
+      board.redrawAll();
+    }
+  },
+  1, "Curve"
+);
+
+
 // *************************************** FreeLine ******************************************* //
 bay.whiteboard.pencil.FreeLine = function(p1, p2){
   bay.whiteboard.geometry.Segment.call(this, p1, p2);
@@ -44,7 +174,7 @@ bay.whiteboard.pencil.FreeLine.prototype.draw = function(board){
 }
 
 bay.whiteboard.Whiteboard.properties.freeline = {
-  width: 2,
+  width: 3,
   color: 'Gray'
 }
 
@@ -253,7 +383,7 @@ bay.whiteboard.pencil.Rectangle.prototype.draw = function(board){
 }
 
 bay.whiteboard.Whiteboard.properties.rectangle = {
-  width: 2,
+  width: 3,
   color: 'Grey'
 }
 
@@ -418,7 +548,7 @@ bay.whiteboard.pencil.Circle.prototype.draw = function(board){
 }
 
 bay.whiteboard.Whiteboard.properties.pencilcircle = {
-  width: 2,
+  width: 3,
   color: 'Grey'
 }
 

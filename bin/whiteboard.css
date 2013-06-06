@@ -60,8 +60,23 @@ td.bwb_drawarea svg{
 .bwb_toolbarButton.zoom-out {
   background-image: url('image/zoom-out.gif');
 }
+.bwb_toolbarButton.tools {
+  background-image: url('image/tools.gif');
+}
+.bwb_toolbarButton.coordinates {
+  background-image: url('image/coordinates.gif');
+}
+.bwb_toolbarButton.eraseAll {
+  background-image: url('image/trash.gif');
+}
+.bwb_toolbarButton.eraseTrace {
+  background-image: url('image/eraser.gif');
+}
 .bwb_toolbarButton.geometry {
   background-image: url('image/ruler_compass.gif');
+}
+.bwb_toolbarButton.point {
+  background-image: url('image/point.gif');
 }
 .bwb_toolbarButton.ruler {
   background-image: url('image/line.gif');
@@ -75,6 +90,9 @@ td.bwb_drawarea svg{
 .bwb_toolbarButton.circle {
   background-image: url('image/circle2.gif');
 }
+.bwb_pointCursor {
+  cursor: url('image/point-pointer.gif'),auto;
+}
 .bwb_rulerCursor {
   cursor: url('image/ruler-pointer.gif'),auto;
 }
@@ -84,6 +102,9 @@ td.bwb_drawarea svg{
 
 .bwb_toolbarButton.pencil {
   background-image: url('image/pencil.gif');
+}
+.bwb_toolbarButton.curve {
+  background-image: url('image/curve.gif');
 }
 .bwb_toolbarButton.freeline {
   background-image: url('image/freeline.gif');
@@ -96,6 +117,9 @@ td.bwb_drawarea svg{
 }
 .bwb_toolbarButton.text {
   background-image: url('image/text.gif');
+}
+.bwb_curveCursor {
+  cursor: url('image/curve-pointer.gif'),auto;
 }
 .bwb_pencilLineCursor {
   cursor: url('image/freeline-pointer.gif'),auto;

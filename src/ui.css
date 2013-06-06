@@ -103,6 +103,9 @@ td.bwb_drawarea svg{
 .bwb_toolbarButton.pencil {
   background-image: url('image/pencil.gif');
 }
+.bwb_toolbarButton.curve {
+  background-image: url('image/curve.gif');
+}
 .bwb_toolbarButton.freeline {
   background-image: url('image/freeline.gif');
 }
@@ -114,6 +117,9 @@ td.bwb_drawarea svg{
 }
 .bwb_toolbarButton.text {
   background-image: url('image/text.gif');
+}
+.bwb_curveCursor {
+  cursor: url('image/curve-pointer.gif'),auto;
 }
 .bwb_pencilLineCursor {
   cursor: url('image/freeline-pointer.gif'),auto;

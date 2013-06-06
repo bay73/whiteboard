@@ -161,7 +161,7 @@ bay.whiteboard.Whiteboard.properties = {
     fontsize: 14
   },
   hover: {
-    width:   3,
+    width:   4,
     color:  'blue',
     dist:  10
   },
@@ -171,7 +171,7 @@ bay.whiteboard.Whiteboard.properties = {
   },
   axes: {
     width:    0.5,
-    color:    'lightblue',
+    color:    'skyblue',
     font:     'Times',
     fontsize: 11
   }
@@ -225,8 +225,9 @@ bay.whiteboard.Whiteboard.prototype.redrawAll = function(){
     if (point.exists){
       var stroke = new goog.graphics.Stroke(this.properties.axes.width, this.properties.axes.color);
       var font = new goog.graphics.Font(this.properties.axes.fontsize, this.properties.axes.font)
+      var fill = new goog.graphics.SolidFill(this.properties.axes.color);
       var coords = this.transform([point.x, point.y]);
-      this.graphics.drawText('[' + point.x + ', ' +point.y + ']', coords[0], coords[1] - this.properties.axes.fontsize, null, null, 'left', null, font, stroke, null);
+      this.graphics.drawText('[' + Math.round(point.x * 100)/100 + ', ' + Math.round(point.y * 100)/100 + ']', coords[0], coords[1] - this.properties.axes.fontsize, null, null, 'left', null, font, stroke, fill);
     }
   }
 }
@@ -712,7 +713,8 @@ bay.whiteboard.Whiteboard.prototype.showInfo = function(x, y, list, current){
 
 bay.whiteboard.Whiteboard.prototype.drawCoordinates = function(){
   var stroke = new goog.graphics.Stroke(this.properties.axes.width, this.properties.axes.color);
-  var font = new goog.graphics.Font(this.properties.axes.fontsize, this.properties.axes.font)
+  var font = new goog.graphics.Font(this.properties.axes.fontsize, this.properties.axes.font);
+  var fill = new goog.graphics.SolidFill(this.properties.axes.color);
 
   var coords = this.transform([this.area.minX, 0, this.area.maxX, 0, 0, this.area.minY, 0, this.area.maxY]);
   var xPath = new goog.graphics.Path();
@@ -740,7 +742,7 @@ bay.whiteboard.Whiteboard.prototype.drawCoordinates = function(){
     path.moveTo( coords[0], coords[1] );
     path.lineTo( coords[2], coords[3] );
     this.graphics.drawPath(path, stroke, null);
-    this.graphics.drawText(Math.round(x*10000)/10000, coords[4], coords[5], null, null, 'left', null, font, stroke, null);
+    this.graphics.drawText(Math.round(x*10000)/10000, coords[4], coords[5], null, null, 'left', null, font, stroke, fill);
     x = x + step;
   }
   var y = this.area.minY;
@@ -751,7 +753,7 @@ bay.whiteboard.Whiteboard.prototype.drawCoordinates = function(){
     path.moveTo( coords[0], coords[1] );
     path.lineTo( coords[2], coords[3] );
     this.graphics.drawPath(path, stroke, null);
-    this.graphics.drawText(Math.round(y*10000)/10000, coords[4], coords[5], null, null, 'left', null, font, stroke, null);
+    this.graphics.drawText(Math.round(y*10000)/10000, coords[4], coords[5], null, null, 'left', null, font, stroke, fill);
     y = y + step;
   }
 }

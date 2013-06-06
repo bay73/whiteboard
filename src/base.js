@@ -228,6 +228,10 @@ bay.whiteboard.Vector = function(x, y){
     this.y = y;
   }
 }
+bay.whiteboard.Vector.prototype.distance = function(x, y){
+  var to = new bay.whiteboard.Vector(x,y);
+  return Math.sqrt((to.x - this.x)*(to.x - this.x) + (to.y - this.y)*(to.y - this.y))
+}
 // *************************************** Point ******************************************* //
 bay.whiteboard.Point = function(){
   bay.whiteboard.Element.call(this);
