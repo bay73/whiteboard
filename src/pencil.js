@@ -4,6 +4,7 @@ goog.require('bay.whiteboard')
 goog.require('bay.whiteboard.Collection')
 goog.require('bay.whiteboard.geometry');
 
+bay.whiteboard.Whiteboard.addGroup("pencil", 5, "Free hand drawing");
 // *************************************** FreeLine ******************************************* //
 bay.whiteboard.pencil.FreeLine = function(p1, p2){
   bay.whiteboard.geometry.Segment.call(this, p1, p2);
@@ -85,7 +86,8 @@ bay.whiteboard.Whiteboard.addTool(
       board.collections.current.add(line);
       board.redrawAll();
     }
-  }
+  },
+  2, "Polyline"
 );
 
 // *************************************** Rectangle ******************************************* //
@@ -291,7 +293,8 @@ bay.whiteboard.Whiteboard.addTool(
       }
       board.redrawAll();
     }
-  }
+  },
+  3, "Rectangle"
 );
 
 // *************************************** PointAtRect ******************************************* //
@@ -457,7 +460,8 @@ bay.whiteboard.Whiteboard.addTool(
       }
       board.redrawAll();
     }
-  }
+  },
+  4, "Circle"
 );
 
 
@@ -545,11 +549,11 @@ bay.whiteboard.pencil.Text.prototype.draw = function(board){
       var fill = new goog.graphics.SolidFill(board.properties.hover.color, 0.2);
       board.graphics.drawPath(path, null, fill);
     }
-    var color = board.properties.line.color;
+    var color = board.properties.text.color;
     if (this.color){
       color = this.color;
     }
-    var stroke = new goog.graphics.Stroke(board.properties.line.width, color);
+    var stroke = new goog.graphics.Stroke(board.properties.text.width, color);
     var fill = new goog.graphics.SolidFill(color);
     board.graphics.drawText(this.label, coords[0], coords[1], width, height, 'center', 'center', font, stroke, fill);
   }
@@ -598,6 +602,7 @@ bay.whiteboard.Whiteboard.addTool(
       }
       board.redrawAll();
     }
-  }
+  },
+  5, "Text box"
 );
 

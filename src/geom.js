@@ -3,6 +3,8 @@ goog.provide('bay.whiteboard.geometry');
 goog.require('bay.whiteboard')
 goog.require('bay.whiteboard.Collection')
 
+bay.whiteboard.Whiteboard.addGroup("geometry", 10, "Ruler-and-compass constructions");
+
 // *************************************** PointAtLine ******************************************* //
 bay.whiteboard.geometry.PointAtLine = function(l, t){
   bay.whiteboard.Point.call(this);
@@ -296,7 +298,8 @@ bay.whiteboard.Whiteboard.addTool(
       board.tool.current.toggleOff(board);
       board.redrawAll();
     }
-  }
+  },
+  1, "Single point"
 );
 
 
@@ -494,7 +497,8 @@ bay.whiteboard.Whiteboard.addTool(
       }
       board.redrawAll();
     }
-  }
+  },
+  2, "Line through two points"
 );
 
 bay.whiteboard.geometry.Line_2p.prototype.toJson = function(list, id){
@@ -611,7 +615,8 @@ bay.whiteboard.Whiteboard.addTool(
       }
       board.redrawAll();
     }
-  }
+  },
+  3, "Line segment connecting two points"
 );
 
 // *************************************** Circle **************************************** //
@@ -793,7 +798,8 @@ bay.whiteboard.Whiteboard.addTool(
       }
       board.redrawAll();
     }
-  }
+  },
+  4, "Circle with radius equals to the given segment"
 );
 
 bay.whiteboard.Whiteboard.addTool(
@@ -821,7 +827,8 @@ bay.whiteboard.Whiteboard.addTool(
       }
       board.redrawAll();
     }
-  }
+  },
+  5, "Circle with given center"
 );
 
 // ************************************* static methods ***************************************************//

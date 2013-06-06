@@ -1,5 +1,37 @@
 goog.provide('bay.whiteboard')
 
+// Whiteboard user interface
+// Andrey Bogdanov, May 2003
+//
+// Usage of whiteboard:
+// board = bay.whiteboard.Create() - creating of new whiteboard item. Returns the created item
+//
+// board.render(domElement) - rendering whiteboard inside the given dom Element
+//
+// Some board methods:
+//
+// board.linkWebSocket('ws://addr:port/path') - link websocket to synchronize board between client
+//
+// board.setToolProperties( id, visible, order, group) - set properties for existing whiteboard tool buttons
+// You could hide or reorder buttons
+//
+// board.redrawAll() - redraw all elements
+// baord.scale(point, value) - zooming of whitboard with center at given point
+// baord.shift(vector) - shift drawing to the given vector
+//
+// board.properties - object containing drawing properties for elements
+// board.properties.hover - color and width for outlining of hovered elements
+// board.properties.current - color and width for current drawing
+// board.properties.point - default color and size for geometry point
+// board.properties.line - default color and line width for geometry line
+// board.properties.circle - default color and line width for geometry circle
+// board.properties.freeline - default color and line width for free line
+// board.properties.rectangle - default color and line width for rectangle
+// board.properties.pencilcircle - default color and line width for free circle
+// board.properties.text - default color, line width and font for text box
+//
+
+
 goog.require('bay.whiteboard.Collection')
 
 goog.require('goog.dom');
@@ -18,6 +50,7 @@ goog.require('goog.ui.Checkbox');
 goog.require('goog.ui.ColorMenuButton');
 goog.require('goog.ui.CustomColorPalette');
 goog.require('goog.ui.KeyboardShortcutHandler');
+goog.require('goog.ui.Tooltip');
 goog.require('goog.events.MouseWheelHandler');
 goog.require('goog.net.WebSocket');
 
@@ -28,44 +61,89 @@ bay.whiteboard.Create = function(){
 }
 
 bay.whiteboard.Whiteboard = function(){
-  this.initCollections();
+  // copy properties to the board item
   this.properties = goog.object.clone(bay.whiteboard.Whiteboard.properties);
   if (goog.userAgent.MOBILE){
     this.properties.hover.dist = this.properties.hover.dist * 5;
   }
-  this.tool = {};
+  // initialize data
+  this.initCollections();
   this.area = {};
   this.elements = {};
+
+  this.tool = {};
+  // register groups of tools
+  this.tool.groups = [];
+  for(var i = 0; i < bay.whiteboard.Whiteboard.toolGroups.length; i++){
+    var group = {"id": bay.whiteboard.Whiteboard.toolGroups[i].id, "order": bay.whiteboard.Whiteboard.toolGroups[i].order, "desc": bay.whiteboard.Whiteboard.toolGroups[i].desc, "hidden": false};
+    // group actions
+    group.toggleOn = (function(group){return function(board){board.showToolBox(group)}})(group);
+    group.toggleOff = (function(group){return function(board){board.hideToolBox(group)}})(group);
+    this.tool.groups.push( group );
+  }
+
+  // register tools
+  this.tool.tools = [];
+  for(var i = 0; i < bay.whiteboard.Whiteboard.tools.length; i++){
+    toolProto = bay.whiteboard.Whiteboard.tools[i];
+    tool = {"id": toolProto.id, "order": toolProto.order, "desc": toolProto.desc, "hidden": false};
+    // copy properties from tool prototype
+    tool.action = toolProto.action;
+    tool.toggleOn = toolProto.toggleOn;
+    tool.toggleOff = toolProto.toggleOff;
+    tool.onClick = toolProto.onClick;
+    tool.onMove = toolProto.onMove;
+    tool.group = toolProto.group;
+
+    this.tool.tools.push(tool);
+  }
+
 }
 
+bay.whiteboard.Whiteboard.prototype.setToolProperties = function(id, visible, order, group){
+  for(var i = 0; i < this.tool.groups.length; i++){
+    if (this.tool.groups[i].id == id) {
+      this.tool.groups[i].hidden = !visible;
+      this.tool.groups[i].order = order;
+    }
+  }
+  for(var i = 0; i < this.tool.tools.length; i++){
+    if (this.tool.tools[i].id == id) {
+      this.tool.tools[i].hidden = !visible;
+      this.tool.tools[i].order = order;
+      this.tool.tools[i].group = group;
+    }
+  }
+}
 // ********************************** register whitboard tools ********************
 bay.whiteboard.Whiteboard.toolGroups = [];
 
 bay.whiteboard.Whiteboard.tools = [];
 
-bay.whiteboard.Whiteboard.addGroup = function(id){
+bay.whiteboard.Whiteboard.addGroup = function(id, order, desc){
   for(var i = 0; i < bay.whiteboard.Whiteboard.toolGroups.length; i++){
     if (bay.whiteboard.Whiteboard.toolGroups[i].id == id) {
       return bay.whiteboard.Whiteboard.toolGroups[i];
     }
   }
-  var group = {"id": id};
+  var group = {"id": id, "order": order, "desc": desc};
   bay.whiteboard.Whiteboard.toolGroups.push(group);
   return group;
 }
 
-bay.whiteboard.Whiteboard.addTool = function(id, groupId, actions){
+bay.whiteboard.Whiteboard.addTool = function(id, groupId, actions, order, desc){
   if (groupId) bay.whiteboard.Whiteboard.addGroup(groupId);
   for(var i = 0; i < bay.whiteboard.Whiteboard.tools.length; i++){
     if (bay.whiteboard.Whiteboard.tools[i].id == id) {
       return bay.whiteboard.Whiteboard.tools[i];
     }
   }
-  var tool = {"id": id, "group": groupId, "action": actions.action, "toggleOn": actions.toggleOn, "toggleOff": actions.toggleOff, "onClick": actions.onClick, "onMove": actions.onMove};
+  var tool = {"id": id, "order": order, "desc": desc, "group": groupId, "action": actions.action, "toggleOn": actions.toggleOn, "toggleOff": actions.toggleOff, "onClick": actions.onClick, "onMove": actions.onMove};
   bay.whiteboard.Whiteboard.tools.push(tool);
   return tool;
 }
 
+// ********************************** default value for properties ********************//
 bay.whiteboard.Whiteboard.properties = {
   events: {
     onclick:      true,
@@ -91,7 +169,7 @@ bay.whiteboard.Whiteboard.properties = {
     color:    'red'
   }
 }
-// ******************************* renderer ***********************************//
+// ******************************* rendering ***********************************//
 bay.whiteboard.Whiteboard.prototype.render = function(container){
   // container could be string or dom-element
   if(typeof container === 'string')
@@ -117,27 +195,51 @@ bay.whiteboard.Whiteboard.prototype.render = function(container){
   this.addDragListener();
   this.addRightClickListener();
   this.addKeyboardListener();
-
 }
-
-bay.whiteboard.Whiteboard.prototype.getGraphics = function(){
-  if (!this.graphics){
-    if (!goog.graphics.isBrowserSupported()){
-      alert("This browser doesn''t support graphics. Please use another web browser.");
+// ********************************** baord methods **************************************//
+bay.whiteboard.Whiteboard.prototype.redrawAll = function(){
+  var board = this;
+  drawCollection = function(collection){
+    var list = collection.getElements();
+    for(var i=0;i<list.length;i++){
+      if(list[i].draw && !list[i].hidden){
+        list[i].draw(board)
+      }
     }
-    var size = goog.style.getSize(this.elements.drawElement);
-    var graphics = goog.graphics.createSimpleGraphics( size.width-12, size.height-12);
-    var drawElement = this.elements.drawElement;
-    goog.events.listen(new goog.dom.ViewportSizeMonitor(), goog.events.EventType.RESIZE, function(e) { var size = goog.style.getSize(drawElement); graphics.setSize(size.width-12, size.height-12);});
-    graphics.render(this.elements.drawElement);
-    this.graphics = graphics;
-    this.area.transformation = goog.graphics.AffineTransform.getTranslateInstance(graphics.getCoordSize().width/2, graphics.getCoordSize().height/2).scale(1, -1);
-    this.onSetTransformation();
   }
-  return this.graphics;
+  this.graphics.clear();
+  drawCollection(this.collections.tracer);
+  drawCollection(this.collections.main);
+  drawCollection(this.collections.current);
 }
-
-// ********************************** utilities ***********************************
+bay.whiteboard.Whiteboard.prototype.scale = function(p, n){
+  var coords = this.reverseTransform(p);
+  this.area.transformation = this.area.transformation.translate(coords.x, coords.y).scale(n, n).translate(-coords.x, -coords.y);
+  this.onSetTransformation();
+}
+bay.whiteboard.Whiteboard.prototype.shift = function(p){
+  this.area.transformation = this.area.transformation.preTranslate(this.graphics.getCoordSize().width * p.x, -this.graphics.getCoordSize().height * p.y);
+  this.onSetTransformation();
+}
+bay.whiteboard.Whiteboard.prototype.markHoverElements = function(p){
+  var list = this.collections.main.getElements();
+  for(var i=0;i<list.length;i++){
+    list[i].hover = false;
+  }
+  var coords = this.reverseTransform(p);
+  list = this.collections.main.getNeighbourList(coords, this.getHoverDist());
+  for(var i=0;i<list.length;i++){
+    list[i].element.hover = true;
+  }
+}
+bay.whiteboard.Whiteboard.prototype.zoomIn = function(){
+  this.scale(new bay.whiteboard.Vector(this.graphics.getCoordSize().width/2, this.graphics.getCoordSize().height/2), 2);
+  this.redrawAll();
+}
+bay.whiteboard.Whiteboard.prototype.zoomOut = function(){
+  this.scale(new bay.whiteboard.Vector(this.graphics.getCoordSize().width/2, this.graphics.getCoordSize().height/2), 0.5);
+  this.redrawAll();
+}
 bay.whiteboard.Whiteboard.prototype.linkWebSocket = function(url){
   this.ws_  = new goog.net.WebSocket();
   var onWsOpen = function(e){
@@ -163,18 +265,33 @@ bay.whiteboard.Whiteboard.prototype.linkWebSocket = function(url){
       board.ws_.send(this.getJson(e));
   }
 }
-
+// ********************************** utilities ***********************************
+bay.whiteboard.Whiteboard.prototype.getGraphics = function(){
+  if (!this.graphics){
+    if (!goog.graphics.isBrowserSupported()){
+      alert("This browser doesn''t support graphics. Please use another web browser.");
+    }
+    var size = goog.style.getSize(this.elements.drawElement);
+    var graphics = goog.graphics.createSimpleGraphics( size.width-12, size.height-12);
+    var drawElement = this.elements.drawElement;
+    goog.events.listen(new goog.dom.ViewportSizeMonitor(), goog.events.EventType.RESIZE, function(e) { var size = goog.style.getSize(drawElement); graphics.setSize(size.width-12, size.height-12);});
+    graphics.render(this.elements.drawElement);
+    this.graphics = graphics;
+    this.area.transformation = goog.graphics.AffineTransform.getTranslateInstance(graphics.getCoordSize().width/2, graphics.getCoordSize().height/2).scale(1, -1);
+    this.onSetTransformation();
+  }
+  return this.graphics;
+}
 bay.whiteboard.Whiteboard.prototype.getHoverDist = function(){
   return this.properties.hover.dist / this.area.transformation.getScaleX();
 }
-
 bay.whiteboard.Whiteboard.prototype.initCollections = function(){
   this.collections = {};
   this.collections.main = new bay.whiteboard.Collection();
   this.collections.current = new bay.whiteboard.Collection();
   this.collections.tracer = new bay.whiteboard.Collection();
 }
-
+// transformations between baord coordinates and graphics coordinates
 bay.whiteboard.Whiteboard.prototype.transform = function(values){
   var transformed = [];
   if (values instanceof bay.whiteboard.Vector){
@@ -185,7 +302,6 @@ bay.whiteboard.Whiteboard.prototype.transform = function(values){
     return transformed;
   }
 }
-
 bay.whiteboard.Whiteboard.prototype.reverseTransform = function(values){
   var transformed = [];
   if (values instanceof bay.whiteboard.Vector){
@@ -196,7 +312,6 @@ bay.whiteboard.Whiteboard.prototype.reverseTransform = function(values){
     return transformed;
   }
 }
-
 bay.whiteboard.Whiteboard.prototype.onSetTransformation = function(){
   this.area.reverseTransformation = this.area.transformation.createInverse();
   var coords = this.reverseTransform([0, 0, this.graphics.getCoordSize().width, this.graphics.getCoordSize().height]);
@@ -205,56 +320,6 @@ bay.whiteboard.Whiteboard.prototype.onSetTransformation = function(){
   this.area.maxX = coords[2];
   this.area.maxY = coords[1];
 }
-
-bay.whiteboard.Whiteboard.prototype.redrawAll = function(){
-  var board = this;
-  drawCollection = function(collection){
-    var list = collection.getElements();
-    for(var i=0;i<list.length;i++){
-      if(list[i].draw && !list[i].hidden){
-        list[i].draw(board)
-      }
-    }
-  }
-  this.graphics.clear();
-  drawCollection(this.collections.tracer);
-  drawCollection(this.collections.main);
-  drawCollection(this.collections.current);
-}
-
-bay.whiteboard.Whiteboard.prototype.scale = function(p, n){
-  var coords = this.reverseTransform(p);
-  this.area.transformation = this.area.transformation.translate(coords.x, coords.y).scale(n, n).translate(-coords.x, -coords.y);
-  this.onSetTransformation();
-}
-
-bay.whiteboard.Whiteboard.prototype.shift = function(p){
-  this.area.transformation = this.area.transformation.preTranslate(this.graphics.getCoordSize().width * p.x, -this.graphics.getCoordSize().height * p.y);
-  this.onSetTransformation();
-}
-
-bay.whiteboard.Whiteboard.prototype.markHoverElements = function(p){
-  var list = this.collections.main.getElements();
-  for(var i=0;i<list.length;i++){
-    list[i].hover = false;
-  }
-  var coords = this.reverseTransform(p);
-  list = this.collections.main.getNeighbourList(coords, this.getHoverDist());
-  for(var i=0;i<list.length;i++){
-    list[i].element.hover = true;
-  }
-}
-
-bay.whiteboard.Whiteboard.prototype.zoomIn = function(){
-  this.scale(new bay.whiteboard.Vector(this.graphics.getCoordSize().width/2, this.graphics.getCoordSize().height/2), 2);
-  this.redrawAll();
-}
-
-bay.whiteboard.Whiteboard.prototype.zoomOut = function(){
-  this.scale(new bay.whiteboard.Vector(this.graphics.getCoordSize().width/2, this.graphics.getCoordSize().height/2), 0.5);
-  this.redrawAll();
-}
-
 // *********************************** codePanel *********************************************//
 bay.whiteboard.Whiteboard.prototype.showCodePanel = function(){
   var dialog = new goog.ui.Dialog();
@@ -285,7 +350,7 @@ bay.whiteboard.Whiteboard.prototype.findPoint = function(list){
   }
   return null;
 }
-
+// create new point at event position
 bay.whiteboard.Whiteboard.prototype.pointAtEventPosition = function(e){
   // add point at click position
   var coords = this.getConvertEventPos(e);
@@ -325,12 +390,12 @@ bay.whiteboard.Whiteboard.prototype.pointAtEventPosition = function(e){
   }
   return point;
 }
-
+// coordinates of event position using graphics coordinates
 bay.whiteboard.Whiteboard.prototype.getEventPos = function(e){
   var pos = goog.style.getClientPosition(this.elements.drawElement);
   return new bay.whiteboard.Vector(e.clientX - pos.x, e.clientY - pos.y);
 }
-
+// coordinates of event position using board coordinates
 bay.whiteboard.Whiteboard.prototype.getConvertEventPos = function(e){
   return this.reverseTransform(this.getEventPos(e));
 }
@@ -347,11 +412,6 @@ bay.whiteboard.Whiteboard.prototype.addMouseMoveListener = function(){
     }
     goog.events.listen(this.elements.drawElement, goog.events.EventType.MOUSEMOVE, moveHandler, null, this);
   }
-/*
-      if (this.state.compassEndTmp) this.state.compassEndTmp.moveTo(this.getConvertEventPos(e));
-      if (this.state.compassCenterTmp) this.state.compassCenterTmp.moveTo(this.getConvertEventPos(e));
-      if (this.state.rectEndTmp) this.state.rectEndTmp.moveTo(this.getConvertEventPos(e));
-*/
 }
 
 bay.whiteboard.Whiteboard.prototype.addWheelListener = function(){
@@ -370,7 +430,6 @@ bay.whiteboard.Whiteboard.prototype.addWheelListener = function(){
     goog.events.listen(new goog.events.MouseWheelHandler(this.elements.drawElement), goog.events.MouseWheelHandler.EventType.MOUSEWHEEL, wheelHandler, null, this);
   }
 }
-
 bay.whiteboard.Whiteboard.prototype.addClickListener = function(){
   if(this.properties.events.onclick){
     var clickHandler = function(e){
@@ -382,7 +441,6 @@ bay.whiteboard.Whiteboard.prototype.addClickListener = function(){
     goog.events.listen(this.elements.drawElement, goog.events.EventType.CLICK, clickHandler, null, this);
   }
 }
-
 bay.whiteboard.Whiteboard.prototype.addDragListener = function(){
   if(this.properties.events.ondrag){
     var dragHandler = function(e){
@@ -408,7 +466,6 @@ bay.whiteboard.Whiteboard.prototype.addDragListener = function(){
       this);
   }
 }
-
 bay.whiteboard.Whiteboard.prototype.addRightClickListener = function(){
   if(this.properties.events.onrightclick){
     goog.events.listen(
@@ -422,7 +479,6 @@ bay.whiteboard.Whiteboard.prototype.addRightClickListener = function(){
       null, this);
   }
 }
-
 bay.whiteboard.Whiteboard.prototype.addKeyboardListener = function(){
   var shortcutHandler = new goog.ui.KeyboardShortcutHandler(document);
   shortcutHandler.registerShortcut('CTRL_J', goog.events.KeyCodes.J, goog.ui.KeyboardShortcutHandler.Modifiers.CTRL);
@@ -462,51 +518,52 @@ bay.whiteboard.Whiteboard.prototype.addButtons = function(){
       button.render(board.elements.toolbarElement);
     goog.style.setSize(button.getElement(), size.width - 4, size.width - 4);
     goog.dom.classes.add(button.getElement(), 'bwb_toolbarButton ' + className);
-    if (tool)
+    if (tool){
       goog.events.listen(button, goog.ui.Component.EventType.ACTION, function(e){ this.buttonAction(tool, e)}, null, board);
+      if (tool.desc){
+        var tooltip = new goog.ui.Tooltip(button.getElement(), tool.desc);
+      }
+    }
     return button;
   }
 
-  // create buttons and tool boxes for group of tools
-  board.tool.groups = [];
-  for(var i = 0; i < bay.whiteboard.Whiteboard.toolGroups.length; i++){
-    var group = {"id": bay.whiteboard.Whiteboard.toolGroups[i].id};
-    board.tool.groups.push( group );
-    group.button = createButton(group.id, group);
-    // new tool box
-    group.toolBox = goog.dom.createDom('div', 'bwb_toolbox', ' ');
-    goog.dom.appendChild(this.container, group.toolBox);
-    goog.style.showElement(group.toolBox, false);
-    // group actions
-    group.toggleOn = (function(group){return function(board){board.showToolBox(group)}})(group);
-    group.toggleOff = (function(group){return function(board){board.hideToolBox(group)}})(group);
+  var sortOrder = function(a, b){
+    var aOrd = a.order;
+    if(!aOrd) aOrd = 0;
+    var bOrd = b.order;
+    if(!bOrd) bOrd = 0;
+    return aOrd - bOrd;
   }
-
+  // create buttons and tool boxes for group of tools
+  board.tool.groups.sort(sortOrder);
+  for(var i = 0; i < board.tool.groups.length; i++){
+    var group = board.tool.groups[i];
+    if (!group.hidden){
+      group.button = createButton(group.id, group);
+      // new tool box
+      group.toolBox = goog.dom.createDom('div', 'bwb_toolbox', ' ');
+      goog.dom.appendChild(this.container, group.toolBox);
+      goog.style.showElement(group.toolBox, false);
+    }
+  }
   // create buttons for tools
-  board.tool.tools = [];
-  for(var i = 0; i < bay.whiteboard.Whiteboard.tools.length; i++){
-    toolProto = bay.whiteboard.Whiteboard.tools[i];
-    tool = {"id": toolProto.id};
-    board.tool.tools.push(tool);
-    // copy properties from toll prototype
-    tool.action = toolProto.action;
-    tool.toggleOn = toolProto.toggleOn;
-    tool.toggleOff = toolProto.toggleOff;
-    tool.onClick = toolProto.onClick;
-    tool.onMove = toolProto.onMove;
-    // add button
-    if (toolProto.group == null){
-      createButton(toolProto.id, tool);
-    }else{
-      for(var g = 0; g < board.tool.groups.length; g++){
-        if (board.tool.groups[g].id == toolProto.group) {
-          createButton(tool.id, tool, board.tool.groups[g].toolBox);
+  board.tool.tools.sort(sortOrder);
+  for(var i = 0; i < board.tool.tools.length; i++){
+    tool = board.tool.tools[i];
+    if (!tool.hidden){
+      // add button
+      if (tool.group == null){
+        createButton(tool.id, tool);
+      }else{
+        for(var g = 0; g < board.tool.groups.length; g++){
+          if (board.tool.groups[g].id == tool.group && !board.tool.groups[g].hidden) {
+            createButton(tool.id, tool, board.tool.groups[g].toolBox);
+          }
         }
       }
     }
   }
 }
-
 bay.whiteboard.Whiteboard.prototype.buttonAction = function(tool, e){
   if (tool.action){
     // if action runs immediate action call it
@@ -526,7 +583,13 @@ bay.whiteboard.Whiteboard.prototype.buttonAction = function(tool, e){
     }
   }
 }
-
+bay.whiteboard.Whiteboard.prototype.clearCurrentTool = function(cursorStyle, currentProp){
+  goog.dom.classes.remove(this.elements.drawElement, cursorStyle);
+  this.tool.current[currentProp] = {};
+  this.tool.current = null;
+  this.collections.current.clear();
+  this.redrawAll();
+}
 bay.whiteboard.Whiteboard.prototype.hideToolBox = function(group){
   goog.style.showElement(group.toolBox, false);
 }
@@ -538,7 +601,6 @@ bay.whiteboard.Whiteboard.prototype.showToolBox = function(group){
   goog.style.setPosition(group.toolBox, position);
   goog.style.showElement(group.toolBox, true);
 }
-
 // *********************************** info Dialog *********************************************//
 bay.whiteboard.Whiteboard.prototype.showInfoDialog = function(e){
   var minDist = this.getHoverDist();
@@ -622,21 +684,13 @@ bay.whiteboard.Whiteboard.prototype.showInfo = function(x, y, list, current){
   goog.style.showElement(infoDialog.getElement(), true);
 }
 
-bay.whiteboard.Whiteboard.prototype.clearCurrentTool = function(cursorStyle, currentProp){
-  goog.dom.classes.remove(this.elements.drawElement, cursorStyle);
-  this.tool.current[currentProp] = {};
-  this.tool.current = null;
-  this.collections.current.clear();
-  this.redrawAll();
-}
-
-bay.whiteboard.Whiteboard.addTool("coordinates", "tools", { action: function(board, e) { board.zoomIn();} });
-bay.whiteboard.Whiteboard.addTool("eraseAll", "tools", { action: function(board, e) { board.collections.main.clear();board.collections.tracer.clear(); board.redrawAll();} });
-bay.whiteboard.Whiteboard.addTool("eraseTrace", "tools", { action: function(board, e) { board.collections.tracer.clear(); board.redrawAll();} });
-
-bay.whiteboard.Whiteboard.addTool("zoom-in", null, { action: function(board, e) { board.zoomIn();} });
-
-bay.whiteboard.Whiteboard.addTool("zoom-out", null, { action: function(board, e) { board.zoomOut();} });
+// *************************** Default tools for whiteboard ***************************//
+bay.whiteboard.Whiteboard.addGroup("tools", 99, "Common tools");
+bay.whiteboard.Whiteboard.addTool("zoom-in", "tools", { action: function(board, e) { board.zoomIn();} }, 1, "Zoom in");
+bay.whiteboard.Whiteboard.addTool("zoom-out", "tools", { action: function(board, e) { board.zoomOut();} }, 2, "Zoom out");
+bay.whiteboard.Whiteboard.addTool("coordinates", "tools", { action: function(board, e) { board.zoomIn();} }, 3, "Show coordinates");
+bay.whiteboard.Whiteboard.addTool("eraseAll", "tools", { action: function(board, e) { board.collections.main.clear();board.collections.tracer.clear(); board.redrawAll();} }, 4, "Clear all");
+bay.whiteboard.Whiteboard.addTool("eraseTrace", "tools", { action: function(board, e) { board.collections.tracer.clear(); board.redrawAll();} }, 5, "Clear traces");
 
 bay.whiteboard.Whiteboard.addTool(
   "info", null,
@@ -650,6 +704,7 @@ bay.whiteboard.Whiteboard.addTool(
       }
     },
     onClick: function(board, e) { board.showInfoDialog(e); }
-  }
+  },
+  10, "Show information about selected element"
 );
 
