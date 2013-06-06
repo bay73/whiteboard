@@ -21,6 +21,7 @@ goog.provide('bay.whiteboard')
 //
 // board.properties - object containing drawing properties for elements
 // board.properties.hover - color and width for outlining of hovered elements
+// board.properties.axes - color, width, font for axes
 // board.properties.current - color and width for current drawing
 // board.properties.point - default color and size for geometry point
 // board.properties.line - default color and line width for geometry line
@@ -167,6 +168,12 @@ bay.whiteboard.Whiteboard.properties = {
   current: {
     width:   1,
     color:    'red'
+  },
+  axes: {
+    width:    0.5,
+    color:    'lightblue',
+    font:     'Times',
+    fontsize: 11
   }
 }
 // ******************************* rendering ***********************************//
@@ -208,9 +215,20 @@ bay.whiteboard.Whiteboard.prototype.redrawAll = function(){
     }
   }
   this.graphics.clear();
+  if(this.area.showCoordinates)
+    this.drawCoordinates();
   drawCollection(this.collections.tracer);
   drawCollection(this.collections.main);
   drawCollection(this.collections.current);
+  if (this.dragger && this.dragger.point){
+    point = this.dragger.point;
+    if (point.exists){
+      var stroke = new goog.graphics.Stroke(this.properties.axes.width, this.properties.axes.color);
+      var font = new goog.graphics.Font(this.properties.axes.fontsize, this.properties.axes.font)
+      var coords = this.transform([point.x, point.y]);
+      this.graphics.drawText('[' + point.x + ', ' +point.y + ']', coords[0], coords[1] - this.properties.axes.fontsize, null, null, 'left', null, font, stroke, null);
+    }
+  }
 }
 bay.whiteboard.Whiteboard.prototype.scale = function(p, n){
   var coords = this.reverseTransform(p);
@@ -444,9 +462,10 @@ bay.whiteboard.Whiteboard.prototype.addClickListener = function(){
 bay.whiteboard.Whiteboard.prototype.addDragListener = function(){
   if(this.properties.events.ondrag){
     var dragHandler = function(e){
-      if (this.dragger.point && this.dragger.point.moveTo)
+      if (this.dragger.point && this.dragger.point.moveTo){
         this.dragger.point.moveTo(this.getConvertEventPos(e));
         this.TraceAll();
+      }
     }
     goog.events.listen(
       this.elements.drawElement,
@@ -601,6 +620,13 @@ bay.whiteboard.Whiteboard.prototype.showToolBox = function(group){
   goog.style.setPosition(group.toolBox, position);
   goog.style.showElement(group.toolBox, true);
 }
+bay.whiteboard.Whiteboard.prototype.toggleCoordinate = function(value){
+  if (typeof value != 'undefined')
+    this.area.showCoordinates = value;
+  else
+    this.area.showCoordinates = !this.area.showCoordinates;
+  this.redrawAll();
+}
 // *********************************** info Dialog *********************************************//
 bay.whiteboard.Whiteboard.prototype.showInfoDialog = function(e){
   var minDist = this.getHoverDist();
@@ -684,11 +710,57 @@ bay.whiteboard.Whiteboard.prototype.showInfo = function(x, y, list, current){
   goog.style.showElement(infoDialog.getElement(), true);
 }
 
+bay.whiteboard.Whiteboard.prototype.drawCoordinates = function(){
+  var stroke = new goog.graphics.Stroke(this.properties.axes.width, this.properties.axes.color);
+  var font = new goog.graphics.Font(this.properties.axes.fontsize, this.properties.axes.font)
+
+  var coords = this.transform([this.area.minX, 0, this.area.maxX, 0, 0, this.area.minY, 0, this.area.maxY]);
+  var xPath = new goog.graphics.Path();
+  xPath.moveTo( coords[0], coords[1] );
+  xPath.lineTo( coords[2], coords[3] );
+  this.graphics.drawPath(xPath, stroke, null);
+  var yPath = new goog.graphics.Path();
+  yPath.moveTo( coords[4], coords[5] );
+  yPath.lineTo( coords[6], coords[7] );
+  this.graphics.drawPath(yPath, stroke, null);
+  var scale = this.area.transformation.getScaleX();
+  var step = 100/scale;
+  var exp = 1;
+  if (step < 1){
+    while (step * exp < 1) exp *= 10;
+  }else{
+    while (step * exp > 10) exp /= 10;
+  }
+  step = Math.round(step * exp) / exp;
+  var x = this.area.minX;
+  x = Math.floor(x / step) * step;
+  while (x < this.area.maxX){
+    coords = this.transform([x, -step/10, x, step/10, x, 0]);
+    var path = new goog.graphics.Path();
+    path.moveTo( coords[0], coords[1] );
+    path.lineTo( coords[2], coords[3] );
+    this.graphics.drawPath(path, stroke, null);
+    this.graphics.drawText(Math.round(x*10000)/10000, coords[4], coords[5], null, null, 'left', null, font, stroke, null);
+    x = x + step;
+  }
+  var y = this.area.minY;
+  y = Math.floor(y / step) * step;
+  while (y < this.area.maxY){
+    coords = this.transform([-step/10, y, step/10, y, 0, y]);
+    var path = new goog.graphics.Path();
+    path.moveTo( coords[0], coords[1] );
+    path.lineTo( coords[2], coords[3] );
+    this.graphics.drawPath(path, stroke, null);
+    this.graphics.drawText(Math.round(y*10000)/10000, coords[4], coords[5], null, null, 'left', null, font, stroke, null);
+    y = y + step;
+  }
+}
+
 // *************************** Default tools for whiteboard ***************************//
 bay.whiteboard.Whiteboard.addGroup("tools", 99, "Common tools");
 bay.whiteboard.Whiteboard.addTool("zoom-in", "tools", { action: function(board, e) { board.zoomIn();} }, 1, "Zoom in");
 bay.whiteboard.Whiteboard.addTool("zoom-out", "tools", { action: function(board, e) { board.zoomOut();} }, 2, "Zoom out");
-bay.whiteboard.Whiteboard.addTool("coordinates", "tools", { action: function(board, e) { board.zoomIn();} }, 3, "Show coordinates");
+bay.whiteboard.Whiteboard.addTool("coordinates", "tools", { action: function(board, e) { board.toggleCoordinate();} }, 3, "Show coordinates");
 bay.whiteboard.Whiteboard.addTool("eraseAll", "tools", { action: function(board, e) { board.collections.main.clear();board.collections.tracer.clear(); board.redrawAll();} }, 4, "Clear all");
 bay.whiteboard.Whiteboard.addTool("eraseTrace", "tools", { action: function(board, e) { board.collections.tracer.clear(); board.redrawAll();} }, 5, "Clear traces");
 
