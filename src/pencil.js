@@ -99,7 +99,8 @@ bay.whiteboard.pencil.Curve.fromJson = function(item, list){
   var line = new bay.whiteboard.pencil.Curve( list[item.p0]);
   var i = 0;
   while(typeof item['x'+i] != 'undefined'){
-    line.points.push(new bay.whitboard.Vector(item['x'+i], item['y'+i]));
+    line.points.push(new bay.whiteboard.Vector(item['x'+i], item['y'+i]));
+    i++;
   }
   line.restoreFromJson(item);
   return line;
