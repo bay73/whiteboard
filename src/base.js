@@ -1,7 +1,7 @@
 goog.provide('bay.whiteboard.Collection')
 
 // Base objects used for whiteboard:
-// Andrey Bogdanov, May 2003
+// Andrey Bogdanov, May 2013
 //
 // bay.whiteboard.Collection - the list of elements which can be drawn
 // Collection provides some method to work with set of elements

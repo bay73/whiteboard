@@ -1,7 +1,7 @@
 goog.provide('bay.whiteboard')
 
 // Whiteboard user interface
-// Andrey Bogdanov, May 2003
+// Andrey Bogdanov, May 2013
 //
 // Usage of whiteboard:
 // board = bay.whiteboard.Create() - creating of new whiteboard item. Returns the created item
@@ -116,6 +116,11 @@ bay.whiteboard.Whiteboard.prototype.setToolProperties = function(id, visible, or
     }
   }
 }
+// ********************************** register whitboard tools ********************
+bay.whiteboard.Whiteboard.prototype.getMainCollection = function(){
+  return this.collections.main;
+}
+
 // ********************************** register whitboard tools ********************
 bay.whiteboard.Whiteboard.toolGroups = [];
 
