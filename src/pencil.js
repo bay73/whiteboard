@@ -109,6 +109,18 @@ bay.whiteboard.pencil.Curve.fromJson = function(item, list){
 
 bay.whiteboard.Collection.setFromJsonFunc("PencilCurve", bay.whiteboard.pencil.Curve.fromJson);
 
+// restore point from json data
+bay.whiteboard.pencil.Curve.prototype.acceptData = function(data){
+  bay.whiteboard.pencil.Curve.superClass_.acceptData.call(this, data);
+  this.points = [];
+  var i = 0;
+  while(typeof data['x'+i] != 'undefined'){
+    this.points.push(new bay.whiteboard.Vector(data['x'+i], data['y'+i]));
+    i++;
+  }
+  this.recalc();
+}
+
 
 bay.whiteboard.Whiteboard.addTool(
   "curve", "pencil",
@@ -186,7 +198,7 @@ bay.whiteboard.pencil.FreeLine.prototype.toJson = function(list, id){
 }
 
 bay.whiteboard.pencil.FreeLine.fromJson = function(item, list){
-  var line = new bay.whiteboard.geometry.Segment( list[item.p1], list[item.p2]);
+  var line = new bay.whiteboard.pencil.FreeLine( list[item.p1], list[item.p2]);
   line.restoreFromJson(item);
   return line;
 }
@@ -454,9 +466,8 @@ bay.whiteboard.pencil.PointAtRect.prototype.moveTo = function(x, y){
 bay.whiteboard.pencil.PointAtRect.prototype.acceptData = function(data){
   bay.whiteboard.pencil.PointAtRect.superClass_.acceptData.call(this, data);
   if (this.obj){
-    var point = this.obj.closestPoint(data.x, data.y);
-    this.side = point.side;
-    this.param = point.param;
+    this.side = data.s;
+    this.param = data.t;
   }
   this.recalc();
 }
@@ -484,7 +495,7 @@ bay.whiteboard.pencil.PointAtRect.prototype.recalc = function(){
 }
 
 bay.whiteboard.pencil.PointAtRect.prototype.toJson = function(list, id){
-  return '{' + this.jsonHeader(id) + ', "type": "PencilPointAtRect", "obj": ' + list.indexOf(this.obj) + ', "s": "' + this.side + '", "t": ' + this.param + '"}';
+  return '{' + this.jsonHeader(id) + ', "type": "PencilPointAtRect", "obj": ' + list.indexOf(this.obj) + ', "s": "' + this.side + '", "t": "' + this.param + '"}';
 }
 
 bay.whiteboard.pencil.PointAtRect.fromJson = function(item, list){

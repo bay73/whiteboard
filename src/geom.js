@@ -28,8 +28,7 @@ bay.whiteboard.geometry.PointAtLine.prototype.moveTo = function(x, y){
 bay.whiteboard.geometry.PointAtLine.prototype.acceptData = function(data){
   bay.whiteboard.geometry.PointAtLine.superClass_.acceptData.call(this, data);
   if (this.obj){
-    var point = this.obj.closestPoint(data.x, data.y);
-    this.param = point.param;
+    this.param = data.t;
   }
   this.recalc();
 }
@@ -81,8 +80,7 @@ bay.whiteboard.geometry.PointAtCircle.prototype.moveTo = function(x, y){
 bay.whiteboard.geometry.PointAtCircle.prototype.acceptData = function(data){
   bay.whiteboard.geometry.PointAtCircle.superClass_.acceptData.call(this, data);
   if (this.obj){
-    var point = this.obj.closestPoint(data.x, data.y);
-    this.direction = point.direction;
+    this.direction = new bay.whiteboard.Vector(data.x, data.y);
   }
   this.recalc();
 }
