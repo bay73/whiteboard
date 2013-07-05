@@ -1,0 +1,93 @@
+All elements of whiteboard are inherited from bay.whiteboard.Element.
+The basic attributes are:
+	id 	(integer)	index of the element in the collection list
+	label	(string)	text label for the element
+	color	(string)	color of the element
+	trace	(boolean)	flag if the element should left trace when moved
+	hidden	(boolean)	flag if the element hidden (not visible)
+	type	(string)	type (class) of the element
+
+Each specific element has also own properties depending on it type. Types of elements are listed below:
+
+PointFree - point put on the board independetly (is defined by coordinates)
+	x	(double)	x coordinate of the point
+	y	(double)	y coordinate of the point
+
+PencilCurve - curve line
+	p0	(integer)	id of the starting point for curve
+	x1	(double)	x relative coordinate of the first point of curve
+	y1	(double)	y relative coordinate of the first point of curve
+	x2	(double)	x relative coordinate of the second point of curve
+	y2	(double)	y relative coordinate of the second point of curve
+	...
+	x<i>	(double)	x relative coordinate of the i-th point of curve
+	y<i>	(double)	y relative coordinate of the i-th point of curve
+
+PencilFreeLine - stright segment connecting two points
+	p1	(integer)	id of first point
+	p2	(integer)	id of second point
+
+PencilRect - rectangular frame (is defined by two diagonal angles)
+	p1	(integer)	id of point which is one angle
+	p2	(integer)	id of point which is second angle
+	
+PencilPointAtRect - point at the rectangular frame
+	obj	(integer)	id of rectangle (PencilRect)
+	s	(string)	side (lefty, right, top, bottom)
+	t	(double)	position in the side (0 - one end of the side, 1 - other end of the side)
+
+PencilCircle - circle with given center and going through the point
+	p1	(integer)	id of point which is center of the circle
+	p2	(integer)	id of point on the circle
+
+Text - text inside a rectangular frame
+	r	(integer)	id of rectange (PencilRect)
+
+
+
+PointAtLine - point on the given stright line
+	obj	(integer)	id of line
+	t	(double)	position at the line
+
+PointAtCircle - point on the givemn circle
+	obj	(integer)	id of circle
+	x	(double)	x-coordinate of direction
+	y	(double)	y-coordinate of direction
+
+Point_2l - intersection point of two lines
+	obj1	(integer)	id of the first line
+	obj2	(integer)	id of the second line
+
+Point_2c - intersection point of two circles
+	obj1	(integer)	id of the first circle
+	obj2	(integer)	id of the second circle
+	num	(integer)	num,ber to choose one of two intersection points (0,1)
+
+Point_lc - intersection point of line and circles
+	obj1	(integer)	id of the line
+	obj2	(integer)	id of the circle
+	num	(integer)	num,ber to choose one of two intersection points (0,1)
+
+LineGeneral - line given by the equation a*x+b*y+c=0
+	a	(double)	value of a
+	b	(double)	value of b
+	c	(double)	value of c
+
+Line_2p - line going through two points
+	p1	(integer)	id of first point
+	p2	(integer)	id of second point
+
+Segment - line segment connecting two points
+	p1	(integer)	id of first point
+	p2	(integer)	id of second point
+
+CircleGeneral - circle given by the equation (x-a)^2+(y-b)^2=c^2
+	a	(double)	value of a
+	b	(double)	value of b
+	c	(double)	value of c
+
+Circle_3p - circle given by center and two points which define radius length
+	p1	(integer)	id of center point
+	p2	(integer)	id of first point of radius
+	p3	(integer)	id of second point of radius
+
