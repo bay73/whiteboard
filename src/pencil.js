@@ -22,6 +22,7 @@ bay.whiteboard.pencil.Curve.prototype.addPoint = function(p){
   if (p.x > this.pos.right) this.pos.right = p.x;
   if (p.y > this.pos.top) this.pos.top = p.y;
   if (p.y < this.pos.bottom) this.pos.bottom = p.y;
+  this.onChange();
 }
 bay.whiteboard.pencil.Curve.prototype.toString = function(){
   if(!this.exists) return 'Curve does not exists';
@@ -644,7 +645,7 @@ bay.whiteboard.pencil.Text.prototype.width = function(font, size) {
           this.label);
   goog.dom.appendChild(document.body, o);
   w = goog.style.getSize(o).width;
-  o.remove();
+  goog.dom.removeNode(o);
   return w;
 }
 
