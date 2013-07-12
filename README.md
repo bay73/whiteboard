@@ -1,7 +1,8 @@
 whiteboard
 ==========
 
-JS library to add whiteboard functionality. Allows draw lines and text, drag them. Can synchronise content using websockets
+JS library to add whiteboard functionality. Allows draw lines and text, drag them. Can synchronise content using websockets.
+See the demo version at http://bay73.github.io/whiteboard/
 
 How to use:
 1. Add js, css and inage files from bin folder to you project.
