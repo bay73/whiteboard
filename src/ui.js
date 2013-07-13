@@ -153,6 +153,14 @@ bay.whiteboard.Whiteboard.addTool = function(id, groupId, actions, order, desc){
   return tool;
 }
 
+bay.whiteboard.Whiteboard.removeTool = function(id){
+  for(var i = 0; i < bay.whiteboard.Whiteboard.tools.length; i++){
+    if (bay.whiteboard.Whiteboard.tools[i].id == id) {
+      bay.whiteboard.Whiteboard.tools.splice(i, 1);
+    }
+  }
+}
+
 // ********************************** default value for properties ********************//
 bay.whiteboard.Whiteboard.properties = {
   events: {
