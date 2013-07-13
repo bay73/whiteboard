@@ -116,9 +116,13 @@ bay.whiteboard.Whiteboard.prototype.setToolProperties = function(id, visible, or
     }
   }
 }
-// ********************************** register whitboard tools ********************
+// ********************************** getters for some usefull elements ********************
 bay.whiteboard.Whiteboard.prototype.getMainCollection = function(){
   return this.collections.main;
+}
+
+bay.whiteboard.Whiteboard.prototype.getDrawArea = function(){
+  return whiteboard.elements.drawElement;
 }
 
 // ********************************** register whitboard tools ********************

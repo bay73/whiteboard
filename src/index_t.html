@@ -17,6 +17,7 @@
 </html>
 <script type="text/javascript">
   whiteboard = bay.whiteboard.Create();
-  whiteboard.linkWebSocket('ws://localhost:8080/examples/websocket/whiteboard');
+//  whiteboard.linkWebSocket('ws://localhost:8080/examples/websocket/whiteboard');
   whiteboard.render(document.getElementById('whiteboard'));
+  goog.style.setStyle(whiteboard.elements.drawElement, {"background-color":"bisque"});
 </script>
