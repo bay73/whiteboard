@@ -31,6 +31,14 @@ bay.whiteboard.Collection.prototype.getElements = function(){
   return this.list;
 }
 
+bay.whiteboard.Collection.prototype.getBoard = function(){
+  return this.board;
+}
+
+bay.whiteboard.Collection.prototype.joinBoard = function(board){
+  this.board = board;
+}
+
 // remove all elements from collection
 bay.whiteboard.Collection.prototype.clear = function(){
   for(var i=this.list.length - 1;i>=0;i--){
@@ -131,9 +139,11 @@ bay.whiteboard.Collection.prototype.rebuild = function(data){
   this.clear();
   for(var i=0;i<data.length;i++){
     var func = bay.whiteboard.Collection.getFromJsonFunc(data[i].type);
-    if (func)
+    if (func){
       this.list[i] = func(data[i], this.list);
+      this.list[i].collection = this;
       this.onChange(this.list[i]);
+    }
   }
   return this;
 }

@@ -124,6 +124,9 @@ td.bwb_drawarea svg{
 .bwb_toolbarButton.arrow {
   background-image: url('image/arrow.gif');
 }
+.bwb_toolbarButton.pointer {
+  background-image: url('image/pointer.gif');
+}
 .bwb_curveCursor {
   cursor: url('image/curve-pointer.gif'),auto;
 }
@@ -144,6 +147,9 @@ td.bwb_drawarea svg{
 }
 .bwb_arrowCursor {
   cursor: url('image/arrow-pointer.gif'),auto;
+}
+.bwb_pointerCursor {
+  cursor: url('image/pointer-pointer.gif'),auto;
 }
 
 .pressedButton {

@@ -41,17 +41,22 @@ PencilCircle - circle with given center and going through the point
 	p2	(integer)	id of point on the circle
 
 Text - text inside a rectangular frame
-	r	(integer)	id of rectange (PencilRect)
+	r	(integer)	id of rectangle (PencilRect)
 
-Underline - highlighting of rectagulra area of whiteboard
+Underline - highlighting of rectangular area of whiteboard
 	p1	(integer)	id of point which is one end of the highlighted area
 	p2	(integer)	id of the second end
 	thick   (integer)	thickness of the highlighted area
 
-Arrow - arrow which goes form one point tothe other
+Arrow - arrow which goes from one point to the other
 	p1	(integer)	id of point where arrow starts
 	p2	(integer)	id of point where arrow ends
 	thick   (integer)	thickness of the arrow
+
+Pointer - blinked pointer to the point
+	p	(integer)	id of point 
+	age     (integer)	time in millisecond to blink
+
 
 PointAtLine - point on the given stright line
 	obj	(integer)	id of line

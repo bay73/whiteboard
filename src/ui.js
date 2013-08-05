@@ -327,8 +327,11 @@ bay.whiteboard.Whiteboard.prototype.getHoverDist = function(){
 bay.whiteboard.Whiteboard.prototype.initCollections = function(){
   this.collections = {};
   this.collections.main = new bay.whiteboard.Collection();
+  this.collections.main.joinBoard(this);
   this.collections.current = new bay.whiteboard.Collection();
+  this.collections.current.joinBoard(this);
   this.collections.tracer = new bay.whiteboard.Collection();
+  this.collections.tracer.joinBoard(this);
 }
 // transformations between baord coordinates and graphics coordinates
 bay.whiteboard.Whiteboard.prototype.transform = function(values){

@@ -873,7 +873,7 @@ bay.whiteboard.pencil.Underline.prototype.toJson = function(list, id){
 }
 
 bay.whiteboard.pencil.Underline.fromJson = function(item, list){
-  var line = new bay.whiteboard.geometry.Underline( list[item.p1], list[item.p2]);
+  var line = new bay.whiteboard.pencil.Underline( list[item.p1], list[item.p2]);
   line.thickness = item.thick;
   line.restoreFromJson(item);
   return line;
@@ -1031,13 +1031,13 @@ bay.whiteboard.pencil.Arrow.prototype.toJson = function(list, id){
 }
 
 bay.whiteboard.pencil.Arrow.fromJson = function(item, list){
-  var line = new bay.whiteboard.geometry.Arrow( list[item.p1], list[item.p2]);
+  var line = new bay.whiteboard.pencil.Arrow( list[item.p1], list[item.p2]);
   line.thickness = item.thick;
   line.restoreFromJson(item);
   return line;
 }
 
-bay.whiteboard.Collection.setFromJsonFunc("PencilUnderline", bay.whiteboard.pencil.Arrow.fromJson);
+bay.whiteboard.Collection.setFromJsonFunc("PencilArrow", bay.whiteboard.pencil.Arrow.fromJson);
 
 
 bay.whiteboard.Whiteboard.addTool(
@@ -1064,6 +1064,146 @@ bay.whiteboard.Whiteboard.addTool(
       board.redrawAll();
     }
   },
-  6, "Draw an arrow"
+  7, "Draw an arrow"
+);
+
+// *************************************** Pointer ******************************************* //
+bay.whiteboard.pencil.Pointer = function(p){
+  bay.whiteboard.Element.call(this);
+  this.point = p;
+  if(p){
+    p.dependant.push(this);
+    var currentPointer = this;
+    this.interval = setInterval(function(){currentPointer.decreaseAge(100);},100);
+  }
+  this.recalc();
+}
+
+goog.inherits(bay.whiteboard.pencil.Pointer, bay.whiteboard.Element);
+
+bay.whiteboard.pencil.Pointer.prototype.deleteElement = function(){
+  if(this.point)
+    this.point.deleteDependant(this);
+}
+
+bay.whiteboard.pencil.Pointer.prototype.toString = function(){
+  if(!this.exists) return 'Pointer does not exists';
+  return 'Pointer :[' + this.point.x.toFixed(2) + ', ' + this.point.y.toFixed(2) + ']';
+}
+
+bay.whiteboard.pencil.Pointer.prototype.decreaseAge = function(delta){
+  if(this.collection && this.collection.getBoard())
+    this.board = this.collection.getBoard();
+  if(this.board){
+    if (this.age == undefined){
+      this.age = this.board.properties.pointer.age;
+      this.recalc();
+    }
+    this.age -= delta;
+    if (this.age <= 0) {
+      clearInterval(this.interval);
+      if(this.point){
+        this.point.deleteDependant(this);
+        this.point = null;
+      }
+      this.recalc();
+    };
+    this.board.redrawAll();
+  }
+}
+
+bay.whiteboard.pencil.Pointer.prototype.distance = function(x, y){
+  if(this.exists)
+    return this.point.distance(x,y);
+}
+
+bay.whiteboard.pencil.Pointer.prototype.recalc = function(){
+  if(this.point != null && this.point.exists && this.age > 0)
+    this.exists = true;
+  else
+    this.exists = false;
+  this.recalcDependant();
+}
+
+bay.whiteboard.pencil.Pointer.prototype.draw = function(board){
+  // draw segment if it exists and intersectthe area
+  if(!this.exists) return;
+  if(this.point.x >= board.area.minX && this.point.x <= board.area.maxX && this.point.y >= board.area.minY && this.point.y <= board.area.maxY){
+    var radius = board.properties.pointer.radius * (this.age%500/500) * board.area.transformation.getScaleX();
+    var shape = [];
+    shape[0] = this.point.x;
+    shape[1] = this.point.y;
+    shape[2] = this.point.x - board.properties.pointer.radius;
+    shape[3] = this.point.y;
+    shape[4] = this.point.x + board.properties.pointer.radius;
+    shape[5] = this.point.y;
+    shape[6] = this.point.x;
+    shape[7] = this.point.y - board.properties.pointer.radius;
+    shape[8] = this.point.x;
+    shape[9] = this.point.y + board.properties.pointer.radius;
+    var coords = board.transform(shape);
+    var path1 = new goog.graphics.Path();
+    path1.moveTo( coords[2], coords[3] );
+    path1.lineTo( coords[4], coords[5] );
+    var path2 = new goog.graphics.Path();
+    path2.moveTo( coords[6], coords[7] );
+    path2.lineTo( coords[8], coords[9] );
+    if (this.current){
+      var stroke = new goog.graphics.Stroke(board.properties.current.width, board.properties.current.color);
+      board.graphics.drawCircle(coords[0], coords[1], radius, stroke, null);
+    } else {
+      if (this.hover){
+        var stroke = new goog.graphics.Stroke(board.properties.hover.width, board.properties.hover.color);
+        board.graphics.drawPath(path1, stroke, null);
+        board.graphics.drawPath(path2, stroke, null);
+      }
+      var color = board.properties.pointer.color;
+      if (this.color){
+        color = this.color;
+      }
+      var stroke = new goog.graphics.Stroke(board.properties.pointer.width, color);
+      board.graphics.drawCircle(coords[0], coords[1], radius, stroke, null);
+      board.graphics.drawPath(path1, stroke, null);
+      board.graphics.drawPath(path2, stroke, null);
+    }
+  }
+}
+
+bay.whiteboard.Whiteboard.properties.pointer = {
+  width: 1,
+  radius: 30,
+  color: 'Magenta',
+  age: 10000
+}
+
+
+bay.whiteboard.pencil.Pointer.prototype.toJson = function(list, id){
+  return '{' + this.jsonHeader(id) + ', "type": "PencilPointer", "p": ' + list.indexOf(this.point) + ', "age" :' + this.age + '}';
+}
+
+bay.whiteboard.pencil.Pointer.fromJson = function(item, list){
+  var point = new bay.whiteboard.pencil.Pointer( list[item.p]);
+  point.age = item.age;
+  point.restoreFromJson(item);
+  point.recalc();
+  return point;
+}
+
+bay.whiteboard.Collection.setFromJsonFunc("PencilPointer", bay.whiteboard.pencil.Pointer.fromJson);
+
+
+bay.whiteboard.Whiteboard.addTool(
+  "pointer", "pencil",
+  {
+    toggleOn: function(board) { goog.dom.classes.add(board.elements.drawElement, 'bwb_pointerCursor'); board.tool.current.pointer = {};},
+    toggleOff: function(board) {board.clearCurrentTool('bwb_pointerCursor', 'pointer');},
+    onClick: function(board, e) {
+      var point = board.pointAtEventPosition(e);
+      board.collections.main.add(new bay.whiteboard.pencil.Pointer(point));
+      board.tool.current.toggleOff(board);
+      board.redrawAll();
+    }
+  },
+  8, "Highlight a point at whiteboard"
 );
 
