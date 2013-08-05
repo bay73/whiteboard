@@ -749,3 +749,297 @@ bay.whiteboard.Whiteboard.addTool(
   5, "Text box"
 );
 
+// *************************************** Underline ******************************************* //
+bay.whiteboard.pencil.Underline = function(p1, p2, thickness){
+  bay.whiteboard.Element.call(this);
+  this.startPoint=p1;
+  this.endPoint=p2;
+  p1.dependant.push(this);
+  p2.dependant.push(this);
+  if(thickness)
+    this.thickness = thickness;
+  else
+    this.thickness = 15;
+  this.recalc();
+}
+goog.inherits(bay.whiteboard.pencil.Underline, bay.whiteboard.Element);
+
+bay.whiteboard.pencil.Underline.prototype.toString = function(){
+  if(!this.exists) return 'Underline does not exists';
+  return 'Underline';
+}
+
+bay.whiteboard.pencil.Underline.prototype.distance = function(x, y){
+  var to = new bay.whiteboard.Vector(x,y);
+  var a = this.startPoint.y - to.y;
+  var b = this.endPoint.y - to.y;
+  if (this.direction.x != 0){
+    a = this.startPoint.x - to.x + this.direction.y * (this.startPoint.y - to.y) / this.direction.x;
+    b = this.endPoint.x - to.x + this.direction.y * (this.endPoint.y - to.y) / this.direction.x;
+  }
+  if (a*b <= 0){
+    var d = Math.abs(this.direction.x * (to.y - this.startPoint.y) - this.direction.y * (to.x - this.startPoint.x)) / Math.sqrt(this.direction.x * this.direction.x + this.direction.y * this.direction.y);
+    if (d < this.thickness) return 0;
+    else return d - this.thickness;
+  }else{
+    a = this.startPoint.distance(to.x, to.y);
+    b = this.endPoint.distance(to.x, to.y);
+    if(a < b) return a;
+    else return b;
+  }
+}
+
+bay.whiteboard.pencil.Underline.prototype.recalc = function(){
+  if (!this.startPoint || !this.endPoint || !this.startPoint.exists || !this.endPoint.exists){
+    this.exists = false;
+  } else {
+    this.exists = true;
+    this.direction = new bay.whiteboard.Vector(this.endPoint.x - this.startPoint.x, this.endPoint.y - this.startPoint.y);
+  }
+  this.recalcDependant();
+}
+
+bay.whiteboard.pencil.Underline.prototype.draw = function(board){
+  // draw segment if it exists and intersectthe area
+  if(!this.exists) return;
+  var val = bay.whiteboard.geometry.Line.prototype.getMinAndMaxParamValue.call(this, board.area);
+  if (val && val.max > 0 && val.min < 1){
+    var norm = Math.sqrt(this.direction.x*this.direction.x + this.direction.y*this.direction.y);
+    if (norm != 0){
+      var rect = [];
+      rect[0] = this.startPoint.x + this.thickness*this.direction.y/norm;
+      rect[1] = this.startPoint.y - this.thickness*this.direction.x/norm;
+      rect[2] = this.startPoint.x - this.thickness*this.direction.y/norm;
+      rect[3] = this.startPoint.y + this.thickness*this.direction.x/norm;
+      rect[4] = this.endPoint.x + this.thickness*this.direction.y/norm;
+      rect[5] = this.endPoint.y - this.thickness*this.direction.x/norm;
+      rect[6] = this.endPoint.x - this.thickness*this.direction.y/norm;
+      rect[7] = this.endPoint.y + this.thickness*this.direction.x/norm;
+
+      var coords = board.transform(rect);
+      var path = new goog.graphics.Path();
+      path.moveTo( coords[0], coords[1] );
+      path.lineTo( coords[2], coords[3] );
+      path.lineTo( coords[6], coords[7] );
+      path.lineTo( coords[4], coords[5] );
+      path.lineTo( coords[0], coords[1] );
+      if (this.current){
+        var fill = new goog.graphics.SolidFill(board.properties.current.color, board.properties.underline.opacity);
+        board.graphics.drawPath(path, null, fill);
+      } else {
+        if (this.hover){
+          var fill = new goog.graphics.SolidFill(board.properties.hover.color, board.properties.underline.opacity);
+          board.graphics.drawPath(path, null, fill);
+        }
+        var color = board.properties.underline.color;
+        if (this.color){
+          color = this.color;
+        }
+        var fill = new goog.graphics.SolidFill(color, board.properties.underline.opacity);
+        board.graphics.drawPath(path, null, fill);
+      }
+    }
+  }
+}
+
+bay.whiteboard.Whiteboard.properties.underline = {
+  thickness: 15,
+  color: 'Magenta',
+  opacity: 0.3
+}
+
+
+bay.whiteboard.pencil.Underline.prototype.toJson = function(list, id){
+  return '{' + this.jsonHeader(id) + ', "type": "PencilUnderline", "p1": ' + list.indexOf(this.startPoint) + ', "p2": ' + list.indexOf(this.endPoint) + ', "thick": ' + this.thickness + '}';
+}
+
+bay.whiteboard.pencil.Underline.fromJson = function(item, list){
+  var line = new bay.whiteboard.geometry.Underline( list[item.p1], list[item.p2]);
+  line.thickness = item.thick;
+  line.restoreFromJson(item);
+  return line;
+}
+
+bay.whiteboard.Collection.setFromJsonFunc("PencilUnderline", bay.whiteboard.pencil.Underline.fromJson);
+
+
+bay.whiteboard.Whiteboard.addTool(
+  "underline", "pencil",
+  {
+    toggleOn: function(board) { goog.dom.classes.add(board.elements.drawElement, 'bwb_underlineCursor'); board.tool.current.underline = {};},
+    toggleOff: function(board) {board.clearCurrentTool('bwb_underlineCursor', 'underline');},
+    onMove: function(board, e) { if (board.tool.current.underline.endTmp) {board.tool.current.underline.endTmp.moveTo(board.getConvertEventPos(e)); }},
+    onClick: function(board, e) {
+      var point = board.pointAtEventPosition(e);
+      if (board.tool.current.underline.start){
+        board.collections.main.add(new bay.whiteboard.pencil.Underline(board.tool.current.underline.start, point, board.properties.underline.thickness));
+        board.collections.current.clear();
+        board.tool.current.toggleOff(board);
+      }else{
+        board.collections.current.clear();
+        board.tool.current.underline.start = point;
+        board.collections.current.add(board.tool.current.underline.endTmp = new bay.whiteboard.PointFree(point));
+        board.tool.current.underline.endTmp.hide();
+        var line = new bay.whiteboard.pencil.Underline(board.tool.current.underline.start, board.tool.current.underline.endTmp, board.properties.underline.thickness)
+        line.current = true;
+        board.collections.current.add(line);
+      }
+      board.redrawAll();
+    }
+  },
+  6, "Highlight board area"
+);
+
+
+// *************************************** Arrow ******************************************* //
+bay.whiteboard.pencil.Arrow = function(p1, p2, thickness){
+  bay.whiteboard.Element.call(this);
+  this.startPoint=p1;
+  this.endPoint=p2;
+  p1.dependant.push(this);
+  p2.dependant.push(this);
+  if(thickness)
+    this.thickness = thickness;
+  else
+    this.thickness = 15;
+  this.recalc();
+}
+goog.inherits(bay.whiteboard.pencil.Arrow, bay.whiteboard.Element);
+
+bay.whiteboard.pencil.Arrow.prototype.toString = function(){
+  if(!this.exists) return 'Arrow does not exists';
+  return 'Arrow';
+}
+
+bay.whiteboard.pencil.Arrow.prototype.distance = function(x, y){
+  var to = new bay.whiteboard.Vector(x,y);
+  var a = this.startPoint.y - to.y;
+  var b = this.endPoint.y - to.y;
+  if (this.direction.x != 0){
+    a = this.startPoint.x - to.x + this.direction.y * (this.startPoint.y - to.y) / this.direction.x;
+    b = this.endPoint.x - to.x + this.direction.y * (this.endPoint.y - to.y) / this.direction.x;
+  }
+  if (a*b <= 0){
+    var d = Math.abs(this.direction.x * (to.y - this.startPoint.y) - this.direction.y * (to.x - this.startPoint.x)) / Math.sqrt(this.direction.x * this.direction.x + this.direction.y * this.direction.y);
+    if (d < this.thickness) return 0;
+    else return d - this.thickness;
+  }else{
+    a = this.startPoint.distance(to.x, to.y);
+    b = this.endPoint.distance(to.x, to.y);
+    if(a < b) return a;
+    else return b;
+  }
+}
+
+bay.whiteboard.pencil.Arrow.prototype.recalc = function(){
+  if (!this.startPoint || !this.endPoint || !this.startPoint.exists || !this.endPoint.exists){
+    this.exists = false;
+  } else {
+    this.exists = true;
+    this.direction = new bay.whiteboard.Vector(this.endPoint.x - this.startPoint.x, this.endPoint.y - this.startPoint.y);
+  }
+  this.recalcDependant();
+}
+
+bay.whiteboard.pencil.Arrow.prototype.draw = function(board){
+  // draw segment if it exists and intersectthe area
+  if(!this.exists) return;
+  var val = bay.whiteboard.geometry.Line.prototype.getMinAndMaxParamValue.call(this, board.area);
+  if (val && val.max > 0 && val.min < 1){
+    var norm = Math.sqrt(this.direction.x*this.direction.x + this.direction.y*this.direction.y);
+    if (norm != 0){
+      var shape = [];
+      shape[0] = this.startPoint.x + this.thickness*this.direction.y/norm;
+      shape[1] = this.startPoint.y - this.thickness*this.direction.x/norm;
+      shape[2] = this.startPoint.x - this.thickness*this.direction.y/norm;
+      shape[3] = this.startPoint.y + this.thickness*this.direction.x/norm;
+      shape[4] = this.endPoint.x - 6*this.thickness*this.direction.x/norm - this.thickness*this.direction.y/norm;
+      shape[5] = this.endPoint.y - 6*this.thickness*this.direction.y/norm + this.thickness*this.direction.x/norm;
+      shape[6] = this.endPoint.x - 6*this.thickness*this.direction.x/norm - 3*this.thickness*this.direction.y/norm;
+      shape[7] = this.endPoint.y - 6*this.thickness*this.direction.y/norm + 3*this.thickness*this.direction.x/norm;
+      shape[8] = this.endPoint.x;
+      shape[9] = this.endPoint.y;
+      shape[10] = this.endPoint.x - 6*this.thickness*this.direction.x/norm + 3*this.thickness*this.direction.y/norm;
+      shape[11] = this.endPoint.y - 6*this.thickness*this.direction.y/norm - 3*this.thickness*this.direction.x/norm;
+      shape[12] = this.endPoint.x - 6*this.thickness*this.direction.x/norm + this.thickness*this.direction.y/norm;
+      shape[13] = this.endPoint.y - 6*this.thickness*this.direction.y/norm - this.thickness*this.direction.x/norm;
+
+      var coords = board.transform(shape);
+      var path = new goog.graphics.Path();
+      path.moveTo( coords[0], coords[1] );
+      path.lineTo( coords[2], coords[3] );
+      path.lineTo( coords[4], coords[5] );
+      path.lineTo( coords[6], coords[7] );
+      path.lineTo( coords[8], coords[9] );
+      path.lineTo( coords[10], coords[11] );
+      path.lineTo( coords[12], coords[13] );
+      path.lineTo( coords[0], coords[1] );
+      if (this.current){
+        var stroke = new goog.graphics.Stroke(board.properties.current.width, board.properties.current.color);
+        board.graphics.drawPath(path, stroke, null);
+      } else {
+        if (this.hover){
+          var fill = new goog.graphics.SolidFill(board.properties.hover.color, board.properties.arrow.opacity);
+          board.graphics.drawPath(path, null, fill);
+        }
+        var color = board.properties.arrow.color;
+        if (this.color){
+          color = this.color;
+        }
+        var stroke = new goog.graphics.Stroke(board.properties.arrow.width, color);
+        var fill = new goog.graphics.SolidFill(color, board.properties.arrow.opacity);
+        board.graphics.drawPath(path, stroke, fill);
+      }
+    }
+  }
+}
+
+bay.whiteboard.Whiteboard.properties.arrow = {
+  width: 1,
+  thickness: 3,
+  color: 'Gray',
+  opacity: 0.3
+}
+
+
+bay.whiteboard.pencil.Arrow.prototype.toJson = function(list, id){
+  return '{' + this.jsonHeader(id) + ', "type": "PencilArrow", "p1": ' + list.indexOf(this.startPoint) + ', "p2": ' + list.indexOf(this.endPoint) + ', "thick": ' + this.thickness + '}';
+}
+
+bay.whiteboard.pencil.Arrow.fromJson = function(item, list){
+  var line = new bay.whiteboard.geometry.Arrow( list[item.p1], list[item.p2]);
+  line.thickness = item.thick;
+  line.restoreFromJson(item);
+  return line;
+}
+
+bay.whiteboard.Collection.setFromJsonFunc("PencilUnderline", bay.whiteboard.pencil.Arrow.fromJson);
+
+
+bay.whiteboard.Whiteboard.addTool(
+  "arrow", "pencil",
+  {
+    toggleOn: function(board) { goog.dom.classes.add(board.elements.drawElement, 'bwb_arrowCursor'); board.tool.current.arrow = {};},
+    toggleOff: function(board) {board.clearCurrentTool('bwb_arrowCursor', 'arrow');},
+    onMove: function(board, e) { if (board.tool.current.arrow.endTmp) {board.tool.current.arrow.endTmp.moveTo(board.getConvertEventPos(e)); }},
+    onClick: function(board, e) {
+      var point = board.pointAtEventPosition(e);
+      if (board.tool.current.arrow.start){
+        board.collections.main.add(new bay.whiteboard.pencil.Arrow(board.tool.current.arrow.start, point, board.properties.arrow.thickness));
+        board.collections.current.clear();
+        board.tool.current.toggleOff(board);
+      }else{
+        board.collections.current.clear();
+        board.tool.current.arrow.start = point;
+        board.collections.current.add(board.tool.current.arrow.endTmp = new bay.whiteboard.PointFree(point));
+        board.tool.current.arrow.endTmp.hide();
+        var line = new bay.whiteboard.pencil.Arrow(board.tool.current.arrow.start, board.tool.current.arrow.endTmp, board.properties.arrow.thickness)
+        line.current = true;
+        board.collections.current.add(line);
+      }
+      board.redrawAll();
+    }
+  },
+  6, "Draw an arrow"
+);
+

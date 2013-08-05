@@ -118,6 +118,12 @@ td.bwb_drawarea svg{
 .bwb_toolbarButton.text {
   background-image: url('image/text.gif');
 }
+.bwb_toolbarButton.underline {
+  background-image: url('image/underline.gif');
+}
+.bwb_toolbarButton.arrow {
+  background-image: url('image/arrow.gif');
+}
 .bwb_curveCursor {
   cursor: url('image/curve-pointer.gif'),auto;
 }
@@ -132,6 +138,12 @@ td.bwb_drawarea svg{
 }
 .bwb_textCursor {
   cursor: url('image/text-pointer.gif'),auto;
+}
+.bwb_underlineCursor {
+  cursor: url('image/underline-pointer.gif'),auto;
+}
+.bwb_arrowCursor {
+  cursor: url('image/arrow-pointer.gif'),auto;
 }
 
 .pressedButton {

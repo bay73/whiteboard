@@ -30,6 +30,8 @@ goog.provide('bay.whiteboard')
 // board.properties.rectangle - default color and line width for rectangle
 // board.properties.pencilcircle - default color and line width for free circle
 // board.properties.text - default color, line width and font for text box
+// board.properties.underline - default color, width and opacity for underline element
+// board.properties.arrow - default color, width and opacity for arrows
 //
 
 
