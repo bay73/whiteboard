@@ -10,11 +10,16 @@ bay.whiteboard.Whiteboard.addGroup("pencil", 5, "Free hand drawing");
 bay.whiteboard.pencil.Curve = function(p){
   bay.whiteboard.Element.call(this);
   this.startPoint=p;
+  p.dependant.push(this);
   this.points = [];
   this.pos={left: p.x, right: p.x, top: p.y, bottom: p.y};
   this.exists = true;
 }
 goog.inherits(bay.whiteboard.pencil.Curve, bay.whiteboard.Element);
+
+bay.whiteboard.pencil.Curve.prototype.deleteElement = function(){
+  this.startPoint.deleteDependant(this);
+}
 
 bay.whiteboard.pencil.Curve.prototype.addPoint = function(p){
   this.points.push(new bay.whiteboard.Vector(p.x - this.startPoint.x, p.y - this.startPoint.y));
@@ -253,6 +258,11 @@ bay.whiteboard.pencil.Rectangle = function(p1, p2){
 
 goog.inherits(bay.whiteboard.pencil.Rectangle, bay.whiteboard.Element);
 
+bay.whiteboard.pencil.Rectangle.prototype.deleteElement = function(){
+  this.pointOne.deleteDependant(this);
+  this.pointTwo.deleteDependant(this);
+}
+
 bay.whiteboard.pencil.Rectangle.prototype.toString = function(){
   if(!this.exists) return 'Rectangle does not exist';
   return 'Rectangle';
@@ -453,6 +463,10 @@ bay.whiteboard.pencil.PointAtRect = function(l, s, t){
 
 goog.inherits(bay.whiteboard.pencil.PointAtRect, bay.whiteboard.Point);
 
+bay.whiteboard.pencil.PointAtRect.prototype.deleteElement = function(){
+  this.obj.deleteDependant(this);
+}
+
 bay.whiteboard.pencil.PointAtRect.prototype.moveTo = function(x, y){
   if (this.obj){
     var point = this.obj.closestPoint(x, y);
@@ -620,7 +634,7 @@ bay.whiteboard.pencil.Text = function(r, t){
 goog.inherits(bay.whiteboard.pencil.Text, bay.whiteboard.Element);
 
 bay.whiteboard.pencil.Text.prototype.deleteElement = function(){
-  this.startPoint.deleteDependant(this);
+  this.rectangle.deleteDependant(this);
 }
 
 
@@ -764,6 +778,11 @@ bay.whiteboard.pencil.Underline = function(p1, p2, thickness){
 }
 goog.inherits(bay.whiteboard.pencil.Underline, bay.whiteboard.Element);
 
+bay.whiteboard.pencil.Underline.prototype.deleteElement = function(){
+  this.startPoint.deleteDependant(this);
+  this.endPoint.deleteDependant(this);
+}
+
 bay.whiteboard.pencil.Underline.prototype.toString = function(){
   if(!this.exists) return 'Underline does not exists';
   return 'Underline';
@@ -905,6 +924,11 @@ bay.whiteboard.pencil.Arrow = function(p1, p2, thickness){
   this.recalc();
 }
 goog.inherits(bay.whiteboard.pencil.Arrow, bay.whiteboard.Element);
+
+bay.whiteboard.pencil.Arrow.prototype.deleteElement = function(){
+  this.startPoint.deleteDependant(this);
+  this.endPoint.deleteDependant(this);
+}
 
 bay.whiteboard.pencil.Arrow.prototype.toString = function(){
   if(!this.exists) return 'Arrow does not exists';

@@ -16,6 +16,10 @@ bay.whiteboard.geometry.PointAtLine = function(l, t){
 
 goog.inherits(bay.whiteboard.geometry.PointAtLine, bay.whiteboard.Point);
 
+bay.whiteboard.geometry.PointAtLine.prototype.deleteElement = function(){
+  this.obj.deleteDependant(this);
+}
+
 bay.whiteboard.geometry.PointAtLine.prototype.moveTo = function(x, y){
   if (this.obj){
     var point = this.obj.closestPoint(x, y);
@@ -67,6 +71,10 @@ bay.whiteboard.geometry.PointAtCircle = function(c, v){
 }
 
 goog.inherits(bay.whiteboard.geometry.PointAtCircle, bay.whiteboard.Point);
+
+bay.whiteboard.geometry.PointAtLine.prototype.deleteElement = function(){
+  this.obj.deleteDependant(this);
+}
 
 bay.whiteboard.geometry.PointAtCircle.prototype.moveTo = function(x, y){
   if (this.obj){

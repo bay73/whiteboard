@@ -228,7 +228,7 @@ bay.whiteboard.Whiteboard.prototype.redrawAll = function(){
   drawCollection = function(collection){
     var list = collection.getElements();
     for(var i=0;i<list.length;i++){
-      if(list[i].draw && !list[i].hidden){
+      if(list[i] && list[i].draw && !list[i].hidden){
         list[i].draw(board)
       }
     }
@@ -262,7 +262,8 @@ bay.whiteboard.Whiteboard.prototype.shift = function(p){
 bay.whiteboard.Whiteboard.prototype.markHoverElements = function(p){
   var list = this.collections.main.getElements();
   for(var i=0;i<list.length;i++){
-    list[i].hover = false;
+    if(list[i])
+      list[i].hover = false;
   }
   var coords = this.reverseTransform(p);
   list = this.collections.main.getNeighbourList(coords, this.getHoverDist());
@@ -533,7 +534,7 @@ bay.whiteboard.Whiteboard.prototype.addKeyboardListener = function(){
 bay.whiteboard.Whiteboard.prototype.TraceAll = function(){
   var list = this.collections.main.getElements();
   for(var i = 0; i < list.length; i++){
-    if(list[i].trace && list[i].exists){
+    if(list[i] && list[i].trace && list[i].exists){
       if (list[i].getTrace){
         var tracer = list[i].getTrace();
         tracer.exists = true;

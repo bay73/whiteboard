@@ -31,7 +31,7 @@ bay.whiteboard.Collection.prototype.getElements = function(){
   return this.list;
 }
 
-// remove all elemen ts from collection
+// remove all elements from collection
 bay.whiteboard.Collection.prototype.clear = function(){
   for(var i=this.list.length - 1;i>=0;i--){
     if (this.list[i] && this.list[i].deleteElement)
@@ -56,7 +56,7 @@ bay.whiteboard.Collection.prototype.add = function(element){
 bay.whiteboard.Collection.prototype.getNeighbourList = function(p, d, onlyVisible, sorted){
   var neighbourList = [];
   for(var i=0;i<this.list.length;i++){
-    if (this.list[i].distance && (!onlyVisible || !this.list[i].hidden)) {
+    if (this.list[i] && this.list[i].distance && (!onlyVisible || !this.list[i].hidden)) {
       var dist = this.list[i].distance(p.x, p.y);
       if (dist <= d){
         neighbourList.push({element: this.list[i], distance: dist});
@@ -89,13 +89,28 @@ bay.whiteboard.Collection.prototype.acceptJsonStr = function(str){
   }
   return this;
 }
-
+// remove element
+bay.whiteboard.Collection.prototype.acceptDeletion = function(id){
+  var element = this.list[id];
+  if(element){
+    if(element.dependant.length == 0){
+      element.deleteElement();
+      if(this.list.length == id + 1){
+        this.list.splice(id, 1);
+      }else{
+        this.list[id] = null;
+      }
+      return true;
+    }
+  }
+  return false;
+}
 // serialization of all elements
 bay.whiteboard.Collection.prototype.jsonCode = function(){
   var str = '[';
   var list = this.getElements();
   for(var i=0;i<list.length;i++){
-    if(list[i].toJson){
+    if(list[i] && list[i].toJson){
       if (i > 0) str += ',';
       str += '\n' + list[i].toJson(list, i);
     }
