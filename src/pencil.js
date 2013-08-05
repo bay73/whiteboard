@@ -906,7 +906,7 @@ bay.whiteboard.Whiteboard.addTool(
       board.redrawAll();
     }
   },
-  6, "Highlight board area"
+  7, "Highlight board area"
 );
 
 
@@ -1064,7 +1064,7 @@ bay.whiteboard.Whiteboard.addTool(
       board.redrawAll();
     }
   },
-  7, "Draw an arrow"
+  6, "Draw an arrow"
 );
 
 // *************************************** Pointer ******************************************* //
