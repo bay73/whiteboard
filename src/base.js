@@ -209,10 +209,10 @@ bay.whiteboard.Element.prototype.jsonHeader = function(id){
 }
 // auxilary function to parse json string
 bay.whiteboard.Element.prototype.restoreFromJson = function(item){
-  if (item.label) this.label = item.label;
-  if (item.hidden) this.hidden = true;
-  if (item.color) this.color = item.color;
-  if (item.trace) this.trace = true;
+  if (item.label) this.label = item.label; else this.label = "";
+  if (item.hidden) this.hidden = true; else delete this.hidden;
+  if (item.color) this.color = item.color; else delete this.color;
+  if (item.trace) this.trace = true; else delete this.trace;
 }
 // vitual function to create element from json
 bay.whiteboard.Element.prototype.acceptData = function(item){
