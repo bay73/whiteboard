@@ -18,6 +18,7 @@ goog.provide('bay.whiteboard')
 // board.redrawAll() - redraw all elements
 // baord.scale(point, value) - zooming of whitboard with center at given point
 // baord.shift(vector) - shift drawing to the given vector
+// board.setBoundaries(left, right, top, bottom) - restrict the working area. If some arguments is missing on null, then this direction is not restricted
 //
 // board.properties - object containing drawing properties for elements
 // board.properties.hover - color and width for outlining of hovered elements
@@ -32,6 +33,7 @@ goog.provide('bay.whiteboard')
 // board.properties.text - default color, line width and font for text box
 // board.properties.underline - default color, width and opacity for underline element
 // board.properties.arrow - default color, width and opacity for arrows
+// board.properties.pointer - default color, age and size for pointer
 //
 
 
@@ -262,13 +264,13 @@ bay.whiteboard.Whiteboard.prototype.getViewport= function(){
 
 bay.whiteboard.Whiteboard.prototype.setBoundaries= function(left, right, top, bottom){
   this.area.left = left;
+  if(this.area.left != null && this.area.left > this.area.minX) this.area.left = this.area.minX;
   this.area.right = right;
+  if(this.area.right != null && this.area.right < this.area.maxX) this.area.right = this.area.maxX;
   this.area.top = top;
+  if(this.area.top != null && this.area.top < this.area.maxY) this.area.top = this.area.maxY;
   this.area.bottom = bottom;
-  if(typeof this.area.left !== 'undefined' && this.area.left > this.area.minX) this.area.left = this.area.minX;
-  if(typeof this.area.right !== 'undefined' && this.area.right < this.area.maxX) this.area.right = this.area.maxX;
-  if(typeof this.area.bottom !== 'undefined' && this.area.bottom > this.area.minY) this.area.bottom = this.area.minY;
-  if(typeof this.area.top !== 'undefined' && this.area.top < this.area.maxY) this.area.top = this.area.maxY;
+  if(this.area.bottom != null && this.area.bottom > this.area.minY) this.area.bottom = this.area.minY;
 }
 
 bay.whiteboard.Whiteboard.prototype.scale = function(p, n){
@@ -380,7 +382,11 @@ bay.whiteboard.Whiteboard.prototype.reverseTransform = function(values){
 bay.whiteboard.Whiteboard.prototype.onSetTransformation = function(oldTransformation){
   this.area.reverseTransformation = this.area.transformation.createInverse();
   var coords = this.reverseTransform([0, 0, this.graphics.getCoordSize().width, this.graphics.getCoordSize().height]);
-  if(coords[0] < this.area.left || coords[2] > this.area.right || coords[3] < this.area.bottom || coords[1] > this.area.top){
+  if(this.area.left != null && coords[0] < this.area.left ||
+     this.area.right != null && coords[2] > this.area.right ||
+     this.area.bottom != null && coords[3] < this.area.bottom ||
+     this.area.top != null && coords[1] > this.area.top
+     ){
     this.area.transformation = oldTransformation;
     this.area.reverseTransformation = this.area.transformation.createInverse();
     return false;
