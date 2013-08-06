@@ -250,14 +250,37 @@ bay.whiteboard.Whiteboard.prototype.redrawAll = function(){
     }
   }
 }
+bay.whiteboard.Whiteboard.prototype.getViewport= function(){
+  var viewport = {
+    left: this.area.minX,
+    right: this.area.maxX,
+    top: this.area.maxY,
+    bottom: this.area.minY
+  };
+  return viewport;
+}
+
+bay.whiteboard.Whiteboard.prototype.setBoundaries= function(left, right, top, bottom){
+  this.area.left = left;
+  this.area.right = right;
+  this.area.top = top;
+  this.area.bottom = bottom;
+  if(typeof this.area.left !== 'undefined' && this.area.left > this.area.minX) this.area.left = this.area.minX;
+  if(typeof this.area.right !== 'undefined' && this.area.right < this.area.maxX) this.area.right = this.area.maxX;
+  if(typeof this.area.bottom !== 'undefined' && this.area.bottom > this.area.minY) this.area.bottom = this.area.minY;
+  if(typeof this.area.top !== 'undefined' && this.area.top < this.area.maxY) this.area.top = this.area.maxY;
+}
+
 bay.whiteboard.Whiteboard.prototype.scale = function(p, n){
   var coords = this.reverseTransform(p);
+  var oldTransformation = this.area.transformation.clone();
   this.area.transformation = this.area.transformation.translate(coords.x, coords.y).scale(n, n).translate(-coords.x, -coords.y);
-  this.onSetTransformation();
+  return this.onSetTransformation(oldTransformation);
 }
 bay.whiteboard.Whiteboard.prototype.shift = function(p){
+  var oldTransformation = this.area.transformation.clone();
   this.area.transformation = this.area.transformation.preTranslate(this.graphics.getCoordSize().width * p.x, -this.graphics.getCoordSize().height * p.y);
-  this.onSetTransformation();
+  return this.onSetTransformation(oldTransformation);
 }
 bay.whiteboard.Whiteboard.prototype.markHoverElements = function(p){
   var list = this.collections.main.getElements();
@@ -354,13 +377,20 @@ bay.whiteboard.Whiteboard.prototype.reverseTransform = function(values){
     return transformed;
   }
 }
-bay.whiteboard.Whiteboard.prototype.onSetTransformation = function(){
+bay.whiteboard.Whiteboard.prototype.onSetTransformation = function(oldTransformation){
   this.area.reverseTransformation = this.area.transformation.createInverse();
   var coords = this.reverseTransform([0, 0, this.graphics.getCoordSize().width, this.graphics.getCoordSize().height]);
-  this.area.minX = coords[0];
-  this.area.minY = coords[3];
-  this.area.maxX = coords[2];
-  this.area.maxY = coords[1];
+  if(coords[0] < this.area.left || coords[2] > this.area.right || coords[3] < this.area.bottom || coords[1] > this.area.top){
+    this.area.transformation = oldTransformation;
+    this.area.reverseTransformation = this.area.transformation.createInverse();
+    return false;
+  }else{
+    this.area.minX = coords[0];
+    this.area.minY = coords[3];
+    this.area.maxX = coords[2];
+    this.area.maxY = coords[1];
+    return true;
+  }
 }
 // *********************************** codePanel *********************************************//
 bay.whiteboard.Whiteboard.prototype.showCodePanel = function(){
