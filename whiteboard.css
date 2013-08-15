@@ -118,6 +118,15 @@ td.bwb_drawarea svg{
 .bwb_toolbarButton.text {
   background-image: url('image/text.gif');
 }
+.bwb_toolbarButton.underline {
+  background-image: url('image/underline.gif');
+}
+.bwb_toolbarButton.arrow {
+  background-image: url('image/arrow.gif');
+}
+.bwb_toolbarButton.pointer {
+  background-image: url('image/pointer.gif');
+}
 .bwb_curveCursor {
   cursor: url('image/curve-pointer.gif'),auto;
 }
@@ -132,6 +141,25 @@ td.bwb_drawarea svg{
 }
 .bwb_textCursor {
   cursor: url('image/text-pointer.gif'),auto;
+}
+.bwb_underlineCursor {
+  cursor: url('image/underline-pointer.gif'),auto;
+}
+.bwb_arrowCursor {
+  cursor: url('image/arrow-pointer.gif'),auto;
+}
+.bwb_pointerCursor {
+  cursor: url('image/pointer-pointer.gif'),auto;
+}
+
+.bwb_toolbarButton.background {
+  background-image: url('image/background.gif');
+}
+.bwb_toolbarButton.clipart {
+  background-image: url('image/clipart.gif');
+}
+.bwb_clipartCursor {
+  cursor: url('image/clipart-pointer.gif'),auto;
 }
 
 .pressedButton {
@@ -188,3 +216,24 @@ td.bwb_drawarea svg{
 }
 
 
+
+.bwb_pictureUrlDialog {
+  margin: 3px;
+  width: 610px;
+  border: 3px outset;
+  border-radius: 6px;
+  background-color: WhiteSmoke;
+  position: absolute;
+}
+
+.bwb_pictureUrlDialog button{
+  border-radius: 8px;
+}
+
+.bwb_pictureUrlInput{
+  border-radius: 3px;
+  width: 600px;
+  display: block;
+  position: relative;
+  left: 3px;
+}
