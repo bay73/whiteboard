@@ -94,7 +94,7 @@ bay.whiteboard.Whiteboard.addTool(
   {
     toggleOn: function(board) {
       board.tool.current.clipart = {};
-      board.tool.current.clipart.dialog = bay.whiteboard.art.ClipArt.chooseUrlDialog(
+      board.tool.current.clipart.dialog = bay.whiteboard.art.chooseClipArt(
         board,
         function(url){
           board.tool.current.clipart.label = url;
@@ -104,8 +104,7 @@ bay.whiteboard.Whiteboard.addTool(
         function(){
           board.tool.current.clipart.dialog.dispose();
           board.tool.current.toggleOff(board);
-        },
-        'http://icons.iconarchive.com/icons/femfoyou/angry-birds/128/angry-bird-icon.png'
+        }
       );
     },
     toggleOff: function(board) {
@@ -136,10 +135,37 @@ bay.whiteboard.Whiteboard.addTool(
       }
     }
   },
-  20, "Text box"
+  20, "Insert picture"
 );
 
-bay.whiteboard.art.ClipArt.chooseUrlDialog = function(board, onOk, onCancel, defaulValue){
+bay.whiteboard.art.chooseClipArt = function(board, onOk, onCancel){
+  return bay.whiteboard.art.chooseUrlDialog(board, onOk, onCancel,'http://icons.iconarchive.com/icons/femfoyou/angry-birds/128/angry-bird-icon.png');
+}
+
+bay.whiteboard.Whiteboard.addTool("background", "tools",
+  {
+    action: function(board, e) {
+      var dialog = bay.whiteboard.art.chooseBackground(
+        board,
+        function(url){
+          dialog.dispose();
+          board.setBackground(url);
+        },
+        function(){
+          dialog.dispose();
+        }
+      );
+    }
+  },
+  20, "Change whiteboard background"
+);
+
+bay.whiteboard.art.chooseBackground = function(board, onOk, onCancel){
+  return bay.whiteboard.art.chooseUrlDialog(board, onOk, onCancel,'http://upload.wikimedia.org/wikipedia/commons/thumb/c/c2/World_map_pol_2005_v02.svg/2000px-World_map_pol_2005_v02.svg.png');
+}
+
+
+bay.whiteboard.art.chooseUrlDialog = function(board, onOk, onCancel, defaulValue){
   var infoDialog = new goog.ui.Component();
   infoDialog.render(document.body);
   var position = goog.style.getPosition(board.elements.drawElement);
@@ -160,24 +186,3 @@ bay.whiteboard.art.ClipArt.chooseUrlDialog = function(board, onOk, onCancel, def
   goog.style.showElement(infoDialog.getElement(), true);
   return infoDialog;
 }
-
-
-bay.whiteboard.Whiteboard.addTool("background", "tools",
-  {
-    action: function(board, e) {
-//      board.hideToolBox("tools");
-      var dialog = bay.whiteboard.art.ClipArt.chooseUrlDialog(
-        board,
-        function(url){
-          dialog.dispose();
-          board.setBackground(url);
-        },
-        function(){
-          dialog.dispose();
-        },
-        'http://upload.wikimedia.org/wikipedia/commons/thumb/c/c2/World_map_pol_2005_v02.svg/2000px-World_map_pol_2005_v02.svg.png'
-      );
-    }
-  },
-  20, "Change whiteboard background"
-);

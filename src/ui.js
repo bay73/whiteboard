@@ -881,11 +881,15 @@ bay.whiteboard.Whiteboard.prototype.backgroundJson = function(){
 bay.whiteboard.Whiteboard.prototype.acceptBackground = function(str){
   var data = eval('(' + str + ')');
   if(data.type == "Background"){
+    if(!this.background){
+      this.background = {};
+    }
     this.background.url = data.url;
     this.background.imageWidth = data.width;
     this.background.imageHeight = data.height;
     this.background.imageLeft = data.left;
     this.background.imageTop = data.top;
+    this.drawBackground();
   }
 }
 

@@ -152,6 +152,16 @@ td.bwb_drawarea svg{
   cursor: url('image/pointer-pointer.gif'),auto;
 }
 
+.bwb_toolbarButton.background {
+  background-image: url('image/background.gif');
+}
+.bwb_toolbarButton.clipart {
+  background-image: url('image/clipart.gif');
+}
+.bwb_clipartCursor {
+  cursor: url('image/clipart-pointer.gif'),auto;
+}
+
 .pressedButton {
   border-style: inset;
 }
