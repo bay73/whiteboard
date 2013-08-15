@@ -152,6 +152,16 @@ td.bwb_drawarea svg{
   cursor: url('image/pointer-pointer.gif'),auto;
 }
 
+.bwb_toolbarButton.background {
+  background-image: url('image/background.gif');
+}
+.bwb_toolbarButton.clipart {
+  background-image: url('image/clipart.gif');
+}
+.bwb_clipartCursor {
+  cursor: url('image/clipart-pointer.gif'),auto;
+}
+
 .pressedButton {
   border-style: inset;
 }
@@ -206,3 +216,24 @@ td.bwb_drawarea svg{
 }
 
 
+
+.bwb_pictureUrlDialog {
+  margin: 3px;
+  width: 610px;
+  border: 3px outset;
+  border-radius: 6px;
+  background-color: WhiteSmoke;
+  position: absolute;
+}
+
+.bwb_pictureUrlDialog button{
+  border-radius: 8px;
+}
+
+.bwb_pictureUrlInput{
+  border-radius: 3px;
+  width: 600px;
+  display: block;
+  position: relative;
+  left: 3px;
+}
