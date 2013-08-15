@@ -298,10 +298,12 @@ bay.whiteboard.Whiteboard.prototype.markHoverElements = function(p){
 }
 bay.whiteboard.Whiteboard.prototype.zoomIn = function(){
   this.scale(new bay.whiteboard.Vector(this.graphics.getCoordSize().width/2, this.graphics.getCoordSize().height/2), 2);
+  this.drawBackground();
   this.redrawAll();
 }
 bay.whiteboard.Whiteboard.prototype.zoomOut = function(){
   this.scale(new bay.whiteboard.Vector(this.graphics.getCoordSize().width/2, this.graphics.getCoordSize().height/2), 0.5);
+  this.drawBackground();
   this.redrawAll();
 }
 bay.whiteboard.Whiteboard.prototype.linkWebSocket = function(url){
@@ -309,6 +311,7 @@ bay.whiteboard.Whiteboard.prototype.linkWebSocket = function(url){
   var onWsOpen = function(e){
   };
   var onWsMessage = function(e){
+    this.acceptBackground(e.message);
     this.collections.main.acceptJsonStr(e.message);
     this.redrawAll();
   };
@@ -327,6 +330,10 @@ bay.whiteboard.Whiteboard.prototype.linkWebSocket = function(url){
   this.collections.main.onChange = function(e){
     if (board.ws_.isOpen())
       board.ws_.send(this.getJson(e));
+  }
+  this.onBackground = function(e){
+    if (board.ws_.isOpen())
+     board.ws_.send(board.backgroundJson());
   }
 }
 // ********************************** utilities ***********************************
@@ -502,6 +509,7 @@ bay.whiteboard.Whiteboard.prototype.addWheelListener = function(){
       } else if (!e.ctrlKey && !e.metaKey){
         this.shift(new bay.whiteboard.Vector(0, -e.detail/40));
       }
+      this.drawBackground();
       this.redrawAll();
       e.preventDefault();
     }
@@ -550,7 +558,7 @@ bay.whiteboard.Whiteboard.prototype.addRightClickListener = function(){
     goog.events.listen(
       this.elements.drawElement, goog.events.EventType.CONTEXTMENU,
       function(e){
-        if (this.tool.current){
+        if (this.tool.current && this.tool.current.toggleOff){
           this.tool.current.toggleOff(this);
         }
         this.showInfoDialog(e);
@@ -645,14 +653,19 @@ bay.whiteboard.Whiteboard.prototype.addButtons = function(){
 }
 bay.whiteboard.Whiteboard.prototype.buttonAction = function(tool, e){
   if (tool.action){
+    if (this.tool.current && this.tool.current.toggleOff){
+      this.tool.current.toggleOff(this);
+      this.tool.current = null;
+    }
     // if action runs immediate action call it
     tool.action(this, e);
   }else{
+    var notCurrent = (this.tool.current != tool);
     // else toggle the current state of board
     if (this.tool.current && this.tool.current.toggleOff){
       this.tool.current.toggleOff(this);
     }
-    if (this.tool.current != tool){
+    if (notCurrent){
       this.tool.current = tool;
       if (tool.toggleOn){
         tool.toggleOn(this);
@@ -670,6 +683,9 @@ bay.whiteboard.Whiteboard.prototype.clearCurrentTool = function(cursorStyle, cur
   this.redrawAll();
 }
 bay.whiteboard.Whiteboard.prototype.hideToolBox = function(group){
+  if (this.tool.current==group){
+    this.tool.current=null;
+  }
   goog.style.showElement(group.toolBox, false);
 }
 
@@ -816,6 +832,63 @@ bay.whiteboard.Whiteboard.prototype.drawCoordinates = function(){
     y = y + step;
   }
 }
+
+bay.whiteboard.Whiteboard.prototype.setBackground = function(url){
+  var board = this;
+  if(!this.background){
+    this.background = {};
+  }
+  this.background.url = url;
+  var img = new Image();
+  img.onload = function() {
+    var width = this.width;
+    var height = this.height;
+    var areaWidth = board.area.maxX - board.area.minX;
+    var areaHeight = board.area.maxY - board.area.minY;
+    var rX = areaWidth/width;
+    var rY = areaHeight/height;
+    board.background.imageWidth = width*Math.min(rX, rY);
+    board.background.imageHeight = height*Math.min(rX, rY);
+    board.background.imageLeft = board.area.minX + (areaWidth - board.background.imageWidth)/2;
+    board.background.imageTop = board.area.maxY - (areaHeight - board.background.imageHeight)/2;
+    if(board.onBackground){
+      board.onBackground();
+    }
+    board.drawBackground();
+  }
+  img.src = url;
+}
+
+bay.whiteboard.Whiteboard.prototype.drawBackground = function(){
+  if(this.background && this.background.url){
+    var width = Math.round(this.background.imageWidth * this.area.transformation.getScaleX());
+    var height = Math.round(-this.background.imageHeight * this.area.transformation.getScaleY());
+    var coords = this.transform([this.background.imageLeft, this.background.imageTop]);
+    var left = Math.round(coords[0]);
+    var top = Math.round(coords[1]);
+    goog.style.setStyle(this.elements.drawElement, {"background-image":"url(" + this.background.url + ")", "background-repeat":"no-repeat", "background-position":left+"px "+top+"px", "background-size":width+"px "+height+"px"});
+  }
+}
+
+
+bay.whiteboard.Whiteboard.prototype.backgroundJson = function(){
+  if(this.background)
+    return '{"type": "Background", "url": "' + this.background.url + '", "width": ' + this.background.imageWidth + ', "height": ' + this.background.imageHeight + ', "left": ' + this.background.imageLeft + ', "top": ' + this.background.imageTop + '}';
+  else
+    return '';
+}
+
+bay.whiteboard.Whiteboard.prototype.acceptBackground = function(str){
+  var data = eval('(' + str + ')');
+  if(data.type == "Background"){
+    this.background.url = data.url;
+    this.background.imageWidth = data.width;
+    this.background.imageHeight = data.height;
+    this.background.imageLeft = data.left;
+    this.background.imageTop = data.top;
+  }
+}
+
 
 // *************************** Default tools for whiteboard ***************************//
 bay.whiteboard.Whiteboard.addGroup("tools", 99, "Common tools");

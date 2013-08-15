@@ -206,3 +206,24 @@ td.bwb_drawarea svg{
 }
 
 
+
+.bwb_pictureUrlDialog {
+  margin: 3px;
+  width: 610px;
+  border: 3px outset;
+  border-radius: 6px;
+  background-color: WhiteSmoke;
+  position: absolute;
+}
+
+.bwb_pictureUrlDialog button{
+  border-radius: 8px;
+}
+
+.bwb_pictureUrlInput{
+  border-radius: 3px;
+  width: 600px;
+  display: block;
+  position: relative;
+  left: 3px;
+}

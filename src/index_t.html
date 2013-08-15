@@ -8,6 +8,7 @@
   <script src="ui.js"></script>
   <script src="geom.js"></script>
   <script src="pencil.js"></script>
+  <script src="art.js"></script>
   <link rel="stylesheet" href="goog.css">
   <link rel="stylesheet" href="ui.css">
 </head>
@@ -19,5 +20,6 @@
   whiteboard = bay.whiteboard.Create();
 //  whiteboard.linkWebSocket('ws://localhost:8080/examples/websocket/whiteboard');
   whiteboard.render(document.getElementById('whiteboard'));
+  whiteboard.setBoundaries(0, 0, 0, 0);
   goog.style.setStyle(whiteboard.elements.drawElement, {"background-color":"bisque"});
 </script>

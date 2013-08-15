@@ -1,0 +1,45 @@
+To create nerw element type for whiteboard you need:
+
+1. Create an object inherited from bay.whiteboard.Element:  goog.inherits(new element, bay.whiteboard.Element);
+	It is possible also to extend any existing element.
+	If new element uses some reference to other elements then it should be added to the dependant lists of them.
+
+2. Define methods for the object:
+	2.1. deleteElement, which correctly clear dependant lists of referenced elements
+
+	2.2. toString
+
+	2.3. distance - this method takes a point as parameter and return the distance between thios point and our object.
+		The method is needed to correct work of onHover.
+
+	2.4. recalc - this method will be calld at any time when referenced objects are changed
+
+	2.5. draw - this method takes a board as a parameter and draw the current object on board.graphics
+		The method should take into account - coordinates on board are different from coordinates on graphics - use board.area.transformation to recalc.
+
+	2.6. toJson - function should return string with json-representation of the object
+
+3. Define class method fromJson which parse json data and restore object
+
+	3.1. register thos fromJson method using bay.whiteboard.Collection.setFromJsonFunc
+
+4. Create user tool to draw new object
+
+	4.1. define toggleOn method which is invoked when user choose the tool
+		this method should initialize all auxiliary variables which needed for drawing
+
+	4.2. define toggleOff method which remove auxiliary variables created by toggleOn
+
+	4.3. define onClick method - this will be invoke when user click the board during tool is active
+		if the drawing has several steps, then it should switch them, if there is only one step, then it should be finished there and call board.tool.current.toggleOff(board);
+
+	4.4. define onMove method - this will be invoke when user moves mouse board during tool is active
+
+	4.5. register new tool using bay.whiteboard.Whiteboard.addTool
+		Parameters:
+		label - the name of the tool
+		group - the name of group where new tool will be added
+		object with toggleOn, toggleOff, onMove and onClick prooperties
+		order - the order of the tool inside the group
+		comment - the text which will be shown as tooltip
+
