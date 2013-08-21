@@ -11,6 +11,9 @@
   <script src="art.js"></script>
   <link rel="stylesheet" href="goog.css">
   <link rel="stylesheet" href="ui.css">
+  <script>
+    goog.require('goog.ui.Palette');
+  </script>
 </head>
 <body style="height:94%;">
   <div id="whiteboard" style = "width:100%; height:100%;"></div>
@@ -53,6 +56,48 @@
       board.collections.main.parseJson(data.json)
     board.redrawAll();
   }
+
+// Sample list of icons to insert
+  var fakeClipList = [
+    'http://icons.iconarchive.com/icons/femfoyou/angry-birds/64/angry-bird-icon.png',
+    'http://icons.iconarchive.com/icons/femfoyou/angry-birds/64/angry-bird-yellow-icon.png',
+    'http://icons.iconarchive.com/icons/femfoyou/angry-birds/64/angry-bird-black-icon.png',
+    'http://icons.iconarchive.com/icons/femfoyou/angry-birds/64/angry-bird-green-icon.png',
+    'http://icons.iconarchive.com/icons/femfoyou/angry-birds/64/angry-bird-white-icon.png',
+    'http://icons.iconarchive.com/icons/femfoyou/angry-birds/64/angry-bird-blue-icon.png',
+    'http://icons.iconarchive.com/icons/femfoyou/angry-birds/64/angry-bird-red-icon.png',
+    'http://icons.iconarchive.com/icons/sirea/angry-birds/64/Pig-icon.png'
+  ];
+// redefine function to create clipArt choosing dialog
+  bay.whiteboard.art.chooseClipArt = function(board, onOk, onCancel){
+    // build list of pallet items from given list of urls
+    var items = [];
+    for(var i=0;i<fakeClipList.length;i++){
+      items.push(goog.dom.createDom('img', {'src':fakeClipList[i]}));
+    }
+    items.push(goog.dom.createTextNode('Cancel'));
+    // create pallete
+    var palette = new goog.ui.Palette(items);
+    palette.render(document.body);
+    var position = goog.style.getPosition(board.elements.drawElement);
+    goog.style.setPosition(palette.getElement(), position.x + 40, position.y + 10);
+    // set class to link styles
+    goog.dom.classes.add(palette.getElement(), 'bwb_pictureUrlDialog');
+    goog.events.listen(palette, goog.ui.Component.EventType.ACTION,
+        function(e) {
+          var item = e.target.getSelectedItem();
+          if(item instanceof HTMLElement){
+            var url = item.getAttribute('src');
+            url = url.replace('64','128'); // using larger picture for drawing
+            onOk(url);
+          }else{
+            // if this is a text node - cancel
+            onCancel();
+          }
+        });
+    return palette;
+  }
+
   // add buttons
   bay.whiteboard.Whiteboard.addTool("prevpage", "tools",{action: function(board, e) {loadPage(board, -1);} },19, "Prev page");
   bay.whiteboard.Whiteboard.addTool("nextpage", "tools",{action: function(board, e) {loadPage(board,  1);} },20, "Next page");
