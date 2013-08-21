@@ -17,9 +17,55 @@
 </body>
 </html>
 <script type="text/javascript">
+
+
+  // variables to track current page and content of already visited pages
+  var savedContent = [];
+  var currentPage;
+  // save current content
+  savePageContent = function(board){
+    if(currentPage)
+      savedContent[currentPage] = board.collections.main.jsonCode();
+  }
+  // get url for the picture of the current page
+  getPageData = function(){
+    if(!currentPage) currentPage = 1;
+    var fakeUrl = 'http://www.mathunion.org/o/General/Prizes/Fields/1990/Jones/page'+currentPage+'.gif';
+    return {
+      url: fakeUrl,
+      json: savedContent[currentPage]
+    }
+  }
+  // redraw whiteboard for new page
+  loadPage = function(board, direction){
+    if(currentPage){
+      savePageContent(board);
+      currentPage = currentPage + direction;
+    }else{
+      currentPage = 1;
+    }
+    data = getPageData(board.currentPage);
+    board.collections.main.clear();
+    board.collections.tracer.clear();
+    if(data.url)
+      board.setBackground(data.url);
+    if(data.json)
+      board.collections.main.parseJson(data.json)
+    board.redrawAll();
+  }
+  // add buttons
+  bay.whiteboard.Whiteboard.addTool("prevpage", "tools",{action: function(board, e) {loadPage(board, -1);} },19, "Prev page");
+  bay.whiteboard.Whiteboard.addTool("nextpage", "tools",{action: function(board, e) {loadPage(board,  1);} },20, "Next page");
+  // create whiteboard
   whiteboard = bay.whiteboard.Create();
+  // link socket for synchronyzation
 //  whiteboard.linkWebSocket('ws://localhost:8080/examples/websocket/whiteboard');
+  // hide background button
+//  whiteboard.setToolProperties('background', false);
+  // render whiteboard
   whiteboard.render(document.getElementById('whiteboard'));
-  whiteboard.setBoundaries(0, 0, 0, 0);
+  // set boundaries of drawing area
+//  whiteboard.setBoundaries(0, 0, 0, 0);
   goog.style.setStyle(whiteboard.elements.drawElement, {"background-color":"bisque"});
+
 </script>
