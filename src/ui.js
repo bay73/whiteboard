@@ -839,24 +839,32 @@ bay.whiteboard.Whiteboard.prototype.setBackground = function(url){
     this.background = {};
   }
   this.background.url = url;
-  var img = new Image();
-  img.onload = function() {
-    var width = this.width;
-    var height = this.height;
-    var areaWidth = board.area.maxX - board.area.minX;
-    var areaHeight = board.area.maxY - board.area.minY;
-    var rX = areaWidth/width;
-    var rY = areaHeight/height;
-    board.background.imageWidth = width*Math.min(rX, rY);
-    board.background.imageHeight = height*Math.min(rX, rY);
-    board.background.imageLeft = board.area.minX + (areaWidth - board.background.imageWidth)/2;
-    board.background.imageTop = board.area.maxY - (areaHeight - board.background.imageHeight)/2;
+  if(url){
+    var img = new Image();
+    img.onload = function() {
+      var width = this.width;
+      var height = this.height;
+      var areaWidth = board.area.maxX - board.area.minX;
+      var areaHeight = board.area.maxY - board.area.minY;
+      var rX = areaWidth/width;
+      var rY = areaHeight/height;
+      board.background.imageWidth = width*Math.min(rX, rY);
+      board.background.imageHeight = height*Math.min(rX, rY);
+      board.background.imageLeft = board.area.minX + (areaWidth - board.background.imageWidth)/2;
+      board.background.imageTop = board.area.maxY - (areaHeight - board.background.imageHeight)/2;
+      if(board.onBackground){
+        board.onBackground();
+      }
+      board.drawBackground();
+    }
+    img.src = url;
+  }else{
+    this.background = {};
     if(board.onBackground){
       board.onBackground();
     }
     board.drawBackground();
   }
-  img.src = url;
 }
 
 bay.whiteboard.Whiteboard.prototype.drawBackground = function(){
@@ -867,6 +875,8 @@ bay.whiteboard.Whiteboard.prototype.drawBackground = function(){
     var left = Math.round(coords[0]);
     var top = Math.round(coords[1]);
     goog.style.setStyle(this.elements.drawElement, {"background-image":"url(" + this.background.url + ")", "background-repeat":"no-repeat", "background-position":left+"px "+top+"px", "background-size":width+"px "+height+"px"});
+  } else {
+    goog.style.setStyle(this.elements.drawElement, {"background-image":""});
   }
 }
 
