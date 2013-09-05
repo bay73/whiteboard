@@ -340,7 +340,7 @@ bay.whiteboard.Whiteboard.prototype.linkWebSocket = function(url){
 bay.whiteboard.Whiteboard.prototype.getGraphics = function(){
   if (!this.graphics){
     if (!goog.graphics.isBrowserSupported()){
-      alert("This browser doesn''t support graphics. Please use another web browser.");
+      alert(goog.getMsg("This browser doesn''t support graphics. Please use another web browser."));
     }
     var size = goog.style.getSize(this.elements.drawElement);
     var graphics = goog.graphics.createSimpleGraphics( size.width-12, size.height-12);
@@ -408,7 +408,7 @@ bay.whiteboard.Whiteboard.prototype.onSetTransformation = function(oldTransforma
 // *********************************** codePanel *********************************************//
 bay.whiteboard.Whiteboard.prototype.showCodePanel = function(){
   var dialog = new goog.ui.Dialog();
-  dialog.setTitle('JSON code for drawing');
+  dialog.setTitle(goog.getMsg('JSON code for drawing'));
   dialog.setButtonSet(goog.ui.Dialog.ButtonSet.OK_CANCEL);
   var textArea = new goog.ui.Textarea(this.collections.main.jsonCode());
   textArea.setMinHeight(this.graphics.getCoordSize().height/2);
@@ -733,11 +733,11 @@ bay.whiteboard.Whiteboard.prototype.showInfo = function(x, y, list, current){
   if (list.length > 1){
     var leftButton = new goog.ui.Button('<');
     infoDialog.addChild(leftButton, true);
-    leftButton.setTooltip('Click to select other element');
+    leftButton.setTooltip(goog.getMsg('Click to select other element'));
     goog.events.listen(leftButton, goog.ui.Component.EventType.ACTION, function(){this.showInfo(x, y, list, current-1);}, null, this);
     goog.dom.classes.add(leftButton.getElement(), 'bwb_navigate bwb_left');
     var rightButton = new goog.ui.Button('>');
-    rightButton.setTooltip('Click to select other element');
+    rightButton.setTooltip(goog.getMsg('Click to select other element'));
     infoDialog.addChild(rightButton, true);
     goog.events.listen(rightButton, goog.ui.Component.EventType.ACTION, function(){this.showInfo(x, y, list, current+1);}, null, this);
     goog.dom.classes.add(rightButton.getElement(), 'bwb_navigate bwb_right');
@@ -759,22 +759,22 @@ bay.whiteboard.Whiteboard.prototype.showInfo = function(x, y, list, current){
     goog.dom.classes.add(label.getElement(), 'bwb_labelInput');
   }
   // button to hide element
-  var hideButton = new goog.ui.Button('Hide');
-  hideButton.setTooltip('Click to hide element');
+  var hideButton = new goog.ui.Button(goog.getMsg('Hide'));
+  hideButton.setTooltip(goog.getMsg('Click to hide element'));
   infoDialog.addChild(hideButton, true);
   goog.dom.classes.add(hideButton.getElement(), 'bwb_hideButton');
   goog.events.listen(hideButton, goog.ui.Component.EventType.ACTION, function(e){element.hide();this.redrawAll(); this.elements.infoDialog.dispose();this.elements.infoDialog = null;}, null, this);
   // check box to turn on trace
   var traceCb = new goog.ui.Checkbox(element.trace);
   infoDialog.addChild(traceCb, true);
-  var traceCbLabel = new goog.ui.Control('Trace');
+  var traceCbLabel = new goog.ui.Control(goog.getMsg('Trace'));
   infoDialog.addChild(traceCbLabel, true);
   goog.dom.classes.add(traceCbLabel.getElement(), 'bwb_traceCheck');
   goog.dom.classes.add(traceCb.getElement(), 'bwb_traceCheck');
   goog.events.listen(traceCb, goog.ui.Component.EventType.CHANGE, function(e){element.setTrace(traceCb.isChecked()); this.redrawAll();}, null, this);
   // button to colorize element
-  var colorButton = new goog.ui.ColorMenuButton('Color');
-  colorButton.setTooltip('Click to select color');
+  var colorButton = new goog.ui.ColorMenuButton(goog.getMsg('Color'));
+  colorButton.setTooltip(goog.getMsg('Click to select color'));
   if (element.color)
     colorButton.setSelectedColor(element.color);
   else
@@ -895,12 +895,12 @@ bay.whiteboard.Whiteboard.prototype.acceptBackground = function(str){
 
 
 // *************************** Default tools for whiteboard ***************************//
-bay.whiteboard.Whiteboard.addGroup("tools", 99, "Common tools");
-bay.whiteboard.Whiteboard.addTool("zoom-in", "tools", { action: function(board, e) { board.zoomIn();} }, 1, "Zoom in");
-bay.whiteboard.Whiteboard.addTool("zoom-out", "tools", { action: function(board, e) { board.zoomOut();} }, 2, "Zoom out");
-bay.whiteboard.Whiteboard.addTool("coordinates", "tools", { action: function(board, e) { board.toggleCoordinate();} }, 3, "Show coordinates");
-bay.whiteboard.Whiteboard.addTool("eraseAll", "tools", { action: function(board, e) { board.collections.main.clear();board.collections.tracer.clear(); board.redrawAll();} }, 4, "Clear all");
-bay.whiteboard.Whiteboard.addTool("eraseTrace", "tools", { action: function(board, e) { board.collections.tracer.clear(); board.redrawAll();} }, 5, "Clear traces");
+bay.whiteboard.Whiteboard.addGroup("tools", 99, goog.getMsg("Common tools"));
+bay.whiteboard.Whiteboard.addTool("zoom-in", "tools", { action: function(board, e) { board.zoomIn();} }, 1, goog.getMsg("Zoom in"));
+bay.whiteboard.Whiteboard.addTool("zoom-out", "tools", { action: function(board, e) { board.zoomOut();} }, 2, goog.getMsg("Zoom out"));
+bay.whiteboard.Whiteboard.addTool("coordinates", "tools", { action: function(board, e) { board.toggleCoordinate();} }, 3, goog.getMsg("Show coordinates"));
+bay.whiteboard.Whiteboard.addTool("eraseAll", "tools", { action: function(board, e) { board.collections.main.clear();board.collections.tracer.clear(); board.redrawAll();} }, 4, goog.getMsg("Clear all"));
+bay.whiteboard.Whiteboard.addTool("eraseTrace", "tools", { action: function(board, e) { board.collections.tracer.clear(); board.redrawAll();} }, 5, goog.getMsg("Clear traces"));
 
 bay.whiteboard.Whiteboard.addTool(
   "info", null,
@@ -915,6 +915,6 @@ bay.whiteboard.Whiteboard.addTool(
     },
     onClick: function(board, e) { board.showInfoDialog(e); }
   },
-  10, "Show information about selected element"
+  10, goog.getMsg("Show information about selected element")
 );
 

@@ -266,8 +266,8 @@ bay.whiteboard.Point = function(){
 goog.inherits(bay.whiteboard.Point, bay.whiteboard.Element);
 // creating user-readable label of element
 bay.whiteboard.Point.prototype.toString = function(){
-  if(!this.exists) return 'Point does not exist';
-  return 'Point: [' + this.x.toFixed(2) + ', ' + this.y.toFixed(2) + ']';
+  if(!this.exists) return goog.getMsg('Point does not exist');
+  return goog.getMsg('Point: [$x},{$y}]', {'x': this.x.toFixed(2), 'y': this.y.toFixed(2)});
 }
 // calculate distance to other point
 bay.whiteboard.Point.prototype.distance = function(x, y){

@@ -3,7 +3,7 @@ goog.provide('bay.whiteboard.geometry');
 goog.require('bay.whiteboard')
 goog.require('bay.whiteboard.Collection')
 
-bay.whiteboard.Whiteboard.addGroup("geometry", 10, "Ruler-and-compass constructions");
+bay.whiteboard.Whiteboard.addGroup("geometry", 10, goog.getMsg("Ruler-and-compass constructions"));
 
 // *************************************** PointAtLine ******************************************* //
 bay.whiteboard.geometry.PointAtLine = function(l, t){
@@ -305,7 +305,7 @@ bay.whiteboard.Whiteboard.addTool(
       board.redrawAll();
     }
   },
-  1, "Single point"
+  1, goog.getMsg("Single point")
 );
 
 
@@ -320,8 +320,8 @@ bay.whiteboard.geometry.Line = function(){
 goog.inherits(bay.whiteboard.geometry.Line, bay.whiteboard.Element);
 
 bay.whiteboard.geometry.Line.prototype.toString = function(){
-  if(!this.exists) return 'Line does not exist';
-  return 'Line [' + this.startPoint.x.toFixed(2) + ', ' + this.startPoint.y.toFixed(2) + '] - [' + (this.startPoint.x + this.direction.x).toFixed(2) + ', ' + (this.startPoint.y + this.direction.y).toFixed(2) + ']';
+  if(!this.exists) return goog.getMsg('Line does not exist');
+  return goog.getMsg('Line [{$fromx},{$fromy}] - [{$tox},{$toy}]', {'fromx': this.startPoint.x.toFixed(2), 'fromy': this.startPoint.y.toFixed(2), 'tox': (this.startPoint.x + this.direction.x).toFixed(2), 'toy': (this.startPoint.y + this.direction.y).toFixed(2)});
 }
 
 bay.whiteboard.geometry.Line.prototype.distance = function(x, y){
@@ -504,7 +504,7 @@ bay.whiteboard.Whiteboard.addTool(
       board.redrawAll();
     }
   },
-  2, "Line through two points"
+  2, goog.getMsg("Line through two points")
 );
 
 bay.whiteboard.geometry.Line_2p.prototype.toJson = function(list, id){
@@ -622,7 +622,7 @@ bay.whiteboard.Whiteboard.addTool(
       board.redrawAll();
     }
   },
-  3, "Line segment connecting two points"
+  3, goog.getMsg("Line segment connecting two points")
 );
 
 // *************************************** Circle **************************************** //
@@ -636,8 +636,8 @@ bay.whiteboard.geometry.Circle = function(){
 goog.inherits(bay.whiteboard.geometry.Circle, bay.whiteboard.Element);
 
 bay.whiteboard.geometry.Circle.prototype.toString = function(){
-  if(!this.exists) return 'Circle does not exist';
-  return 'Circle [' + this.centerPoint.x.toFixed(2) + ', ' + this.centerPoint.y.toFixed(2) + '] -> ' + this.radius.toFixed(2);
+  if(!this.exists) return goog.getMsg('Circle does not exist');
+  return goog.getMsg('Circle [{$x},{$y}] -> {$r}', {'x': this.centerPoint.x.toFixed(2), 'y': this.centerPoint.y.toFixed(2), 'r': this.radius.toFixed(2)});
 }
 
 bay.whiteboard.geometry.Circle.prototype.distance = function(x, y){
@@ -805,7 +805,7 @@ bay.whiteboard.Whiteboard.addTool(
       board.redrawAll();
     }
   },
-  4, "Circle with radius equals to the given segment"
+  4, goog.getMsg("Circle with radius equals to the given segment")
 );
 
 bay.whiteboard.Whiteboard.addTool(
@@ -834,7 +834,7 @@ bay.whiteboard.Whiteboard.addTool(
       board.redrawAll();
     }
   },
-  5, "Circle with given center"
+  5, goog.getMsg("Circle with given center")
 );
 
 // ************************************* static methods ***************************************************//

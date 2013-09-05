@@ -26,8 +26,8 @@ bay.whiteboard.art.ClipArt.prototype.deleteElement = function(){
 
 
 bay.whiteboard.art.ClipArt.prototype.toString = function(){
-  if(!this.exists) return 'ClipArt does not exist';
-  return 'ClipArt from [' + this.label + ']';
+  if(!this.exists) return goog.getMsg('ClipArt does not exist');
+  return goog.getMsg('ClipArt from [{$label}]',{'label': this.label});
 }
 
 bay.whiteboard.art.ClipArt.prototype.distance = function(x, y){
@@ -135,7 +135,7 @@ bay.whiteboard.Whiteboard.addTool(
       }
     }
   },
-  20, "Insert picture"
+  20, goog.getMsg("Insert picture")
 );
 
 bay.whiteboard.art.chooseClipArt = function(board, onOk, onCancel){
@@ -157,7 +157,7 @@ bay.whiteboard.Whiteboard.addTool("background", "tools",
       );
     }
   },
-  20, "Change whiteboard background"
+  20, goog.getMsg("Change whiteboard background")
 );
 
 bay.whiteboard.art.chooseBackground = function(board, onOk, onCancel){

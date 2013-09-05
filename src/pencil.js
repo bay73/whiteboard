@@ -4,7 +4,7 @@ goog.require('bay.whiteboard')
 goog.require('bay.whiteboard.Collection')
 goog.require('bay.whiteboard.geometry');
 
-bay.whiteboard.Whiteboard.addGroup("pencil", 5, "Free hand drawing");
+bay.whiteboard.Whiteboard.addGroup("pencil", 5, goog.getMsg("Free hand drawing"));
 
 // *************************************** Curve ******************************************* //
 bay.whiteboard.pencil.Curve = function(p){
@@ -30,8 +30,8 @@ bay.whiteboard.pencil.Curve.prototype.addPoint = function(p){
   this.onChange();
 }
 bay.whiteboard.pencil.Curve.prototype.toString = function(){
-  if(!this.exists) return 'Curve does not exists';
-  return 'Curve';
+  if(!this.exists) return goog.getMsg('Curve does not exists');
+  return goog.getMsg('Curve');
 }
 bay.whiteboard.pencil.Curve.prototype.distance = function(x, y){
   var to = new bay.whiteboard.Vector(x,y);
@@ -150,7 +150,7 @@ bay.whiteboard.Whiteboard.addTool(
       board.redrawAll();
     }
   },
-  1, "Curve"
+  1, goog.getMsg("Curve")
 );
 
 
@@ -236,7 +236,7 @@ bay.whiteboard.Whiteboard.addTool(
       board.redrawAll();
     }
   },
-  2, "Polyline"
+  2, goog.getMsg("Polyline")
 );
 
 // *************************************** Rectangle ******************************************* //
@@ -264,8 +264,8 @@ bay.whiteboard.pencil.Rectangle.prototype.deleteElement = function(){
 }
 
 bay.whiteboard.pencil.Rectangle.prototype.toString = function(){
-  if(!this.exists) return 'Rectangle does not exist';
-  return 'Rectangle';
+  if(!this.exists) return goog.getMsg('Rectangle does not exist');
+  return goog.getMsg('Rectangle');
 }
 
 bay.whiteboard.pencil.Rectangle.prototype.distance = function(x, y){
@@ -448,7 +448,7 @@ bay.whiteboard.Whiteboard.addTool(
       board.redrawAll();
     }
   },
-  3, "Rectangle"
+  3, goog.getMsg("Rectangle")
 );
 
 // *************************************** PointAtRect ******************************************* //
@@ -618,7 +618,7 @@ bay.whiteboard.Whiteboard.addTool(
       board.redrawAll();
     }
   },
-  4, "Circle"
+  4, goog.getMsg("Circle")
 );
 
 
@@ -639,8 +639,8 @@ bay.whiteboard.pencil.Text.prototype.deleteElement = function(){
 
 
 bay.whiteboard.pencil.Text.prototype.toString = function(){
-  if(!this.exists) return 'Text does not exist';
-  return 'Text [' + this.label + ']';
+  if(!this.exists) return goog.getMsg('Text does not exist');
+  return goog.getMsg('Text [{$label}]', {'label' : this.label});
 }
 
 bay.whiteboard.pencil.Text.prototype.distance = function(x, y){
@@ -760,7 +760,7 @@ bay.whiteboard.Whiteboard.addTool(
       board.redrawAll();
     }
   },
-  5, "Text box"
+  5, goog.getMsg("Text box")
 );
 
 // *************************************** Underline ******************************************* //
@@ -784,8 +784,8 @@ bay.whiteboard.pencil.Underline.prototype.deleteElement = function(){
 }
 
 bay.whiteboard.pencil.Underline.prototype.toString = function(){
-  if(!this.exists) return 'Underline does not exists';
-  return 'Underline';
+  if(!this.exists) return goog.getMsg('Underline does not exists');
+  return goog.getMsg('Underline');
 }
 
 bay.whiteboard.pencil.Underline.prototype.distance = function(x, y){
@@ -906,7 +906,7 @@ bay.whiteboard.Whiteboard.addTool(
       board.redrawAll();
     }
   },
-  7, "Highlight board area"
+  7, goog.getMsg("Highlight board area")
 );
 
 
@@ -931,8 +931,8 @@ bay.whiteboard.pencil.Arrow.prototype.deleteElement = function(){
 }
 
 bay.whiteboard.pencil.Arrow.prototype.toString = function(){
-  if(!this.exists) return 'Arrow does not exists';
-  return 'Arrow';
+  if(!this.exists) return goog.getMsg('Arrow does not exists');
+  return goog.getMsg('Arrow');
 }
 
 bay.whiteboard.pencil.Arrow.prototype.distance = function(x, y){
@@ -1064,7 +1064,7 @@ bay.whiteboard.Whiteboard.addTool(
       board.redrawAll();
     }
   },
-  6, "Draw an arrow"
+  6, goog.getMsg("Draw an arrow")
 );
 
 // *************************************** Pointer ******************************************* //
@@ -1087,8 +1087,8 @@ bay.whiteboard.pencil.Pointer.prototype.deleteElement = function(){
 }
 
 bay.whiteboard.pencil.Pointer.prototype.toString = function(){
-  if(!this.exists) return 'Pointer does not exists';
-  return 'Pointer :[' + this.point.x.toFixed(2) + ', ' + this.point.y.toFixed(2) + ']';
+  if(!this.exists) return goog.getMsg('Pointer does not exists');
+  return goog.getMsg('Pointer [{$x},{$y}]', {'x': this.point.x.toFixed(2), 'y': this.point.y.toFixed(2)});
 }
 
 bay.whiteboard.pencil.Pointer.prototype.decreaseAge = function(delta){
@@ -1204,6 +1204,6 @@ bay.whiteboard.Whiteboard.addTool(
       board.redrawAll();
     }
   },
-  8, "Highlight a point at whiteboard"
+  8, goog.getMsg("Highlight a point at whiteboard")
 );
 
