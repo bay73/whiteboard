@@ -1,4 +1,5 @@
 goog.provide('bay.whiteboard.Collection')
+goog.provide('bay.whiteboard.translation')
 
 // Base objects used for whiteboard:
 // Andrey Bogdanov, May 2013
@@ -385,3 +386,16 @@ bay.whiteboard.getIntersection = function(obj1, obj2, x, y){
     }
   }
 }
+
+goog.getMsg = function(str, opt_values) {
+  var translation = {};
+  if(typeof current_LOCALE !== "undefined")
+    var translation = bay_whiteboard_translation[current_LOCALE];
+  str = translation[str] || str;
+  var values = opt_values || {};
+  for (var key in values) {
+    var value = ('' + values[key]).replace(/\$/g, '$$$$');
+    str = str.replace(new RegExp('\\{\\$' + key + '\\}', 'gi'), value);
+  }
+  return str;
+};

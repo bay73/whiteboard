@@ -1,6 +1,6 @@
-goog.provide('bay.whiteboard.translation')
+var bay_whiteboard_translation = bay_whiteboard_translation || {};
 
-bay.whiteboard.translation.ru =
+bay_whiteboard_translation.ru =
 {
 // Tooltips for buttons
 "Common tools":                                       "Общие инструменты",
@@ -65,13 +65,3 @@ bay.whiteboard.translation.ru =
 }
 
 
-goog.getMsg = function(str, opt_values) {
-  var translation = bay.whiteboard.translation[goog.LOCALE] || {};
-  str = translation[str] || str;
-  var values = opt_values || {};
-  for (var key in values) {
-    var value = ('' + values[key]).replace(/\$/g, '$$$$');
-    str = str.replace(new RegExp('\\{\\$' + key + '\\}', 'gi'), value);
-  }
-  return str;
-};
