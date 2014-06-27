@@ -10,7 +10,7 @@ goog.provide('bay.whiteboard')
 //
 // Some board methods:
 //
-// board.linkWebSocket('ws://addr:port/path') - link websocket to synchronize board between client
+// board.linkWebSocket('ws://addr:port/path', bufferSize, bufferTimeout) - link websocket to synchronize board between client
 //
 // board.setToolProperties( id, visible, order, group) - set properties for existing whiteboard tool buttons
 // You could hide or reorder buttons
@@ -195,6 +195,10 @@ bay.whiteboard.Whiteboard.properties = {
     color:    'skyblue',
     font:     'Times',
     fontsize: 11
+  },
+  ws: {
+    bufferSize:     10000,
+    bufferTimeout:  100
   }
 }
 // ******************************* rendering ***********************************//
@@ -306,8 +310,12 @@ bay.whiteboard.Whiteboard.prototype.zoomOut = function(){
   this.drawBackground();
   this.redrawAll();
 }
-bay.whiteboard.Whiteboard.prototype.linkWebSocket = function(url){
+bay.whiteboard.Whiteboard.prototype.linkWebSocket = function(url, bufferSize, bufferTimeout){
+  if(bufferSize) this.properties.ws.bufferSize = bufferSize;
+  if(bufferTimeout) this.properties.ws.bufferTimeout = bufferTimeout;
   this.ws_  = new goog.net.WebSocket();
+  this.wsBuffer = '';
+  this.wsTimeout = null;
   var onWsOpen = function(e){
   };
   var onWsMessage = function(e){
@@ -327,9 +335,31 @@ bay.whiteboard.Whiteboard.prototype.linkWebSocket = function(url){
   this.ws_.addEventListener(goog.net.WebSocket.EventType.ERROR, onWsError, false, this);
   this.ws_.open(url);
   var board = this;
+  var WsToSend = function(){
+    if(board.wsBuffer.length > board.properties.ws.bufferSize){
+      WsSend();
+    } else {
+      if(!board.wsTimeout){
+        board.wsTimeout = setTimeout( WsSend, board.properties.ws.bufferTimeout);
+      }
+    }
+  }
+  var WsSend = function(){
+    if (board.ws_.isOpen()){
+      board.ws_.send('[' + board.wsBuffer + ']');
+      board.wsBuffer = '';
+    }
+    if(board.wsTimeout){
+      clearTimeout(board.wsTimeout);
+      board.wsTimeout = null;
+    }
+  }
   this.collections.main.onChange = function(e){
-    if (board.ws_.isOpen())
-      board.ws_.send(this.getJson(e));
+    if(board.wsBuffer){
+      board.wsBuffer += ',';
+    }
+    board.wsBuffer += this.getJson(e, true);
+    WsToSend();
   }
   this.onBackground = function(e){
     if (board.ws_.isOpen())

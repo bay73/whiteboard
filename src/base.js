@@ -79,22 +79,31 @@ bay.whiteboard.Collection.prototype.getNeighbourList = function(p, d, onlyVisibl
 }
 
 // serialization of one element
-bay.whiteboard.Collection.prototype.getJson = function(element){
-  return element.toJson(this.list, this.list.indexOf(element));
+bay.whiteboard.Collection.prototype.getJson = function(element, newOnly){
+  return element.toJson(this.list, this.list.indexOf(element), newOnly);
 }
 
 // add element from json string
 bay.whiteboard.Collection.prototype.acceptJsonStr = function(str){
-  var data = eval('(' + str + ')');
-  var id = data.id;
-  if (!this.list[id]){
-    var func = bay.whiteboard.Collection.getFromJsonFunc(data.type);
-    if (func){
-      this.list[id] = func(data, this.list);
-      this.list[id].collection = this;
+  var acceptOne = function(self, data){
+    var id = data.id;
+    if (!self.list[id]){
+      var func = bay.whiteboard.Collection.getFromJsonFunc(data.type);
+      if (func){
+        self.list[id] = func(data, self.list);
+        self.list[id].collection = self;
+      }
+    } else {
+      self.list[id].acceptData(data);
     }
-  } else {
-    this.list[id].acceptData(data);
+  }
+  var data = eval('(' + str + ')');
+  if(data instanceof Array){
+    for(var i=0;i<data.length;i++){
+      acceptOne(this, data[i]);
+    }
+  }else{
+    acceptOne(this, data);
   }
   return this;
 }

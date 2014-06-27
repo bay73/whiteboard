@@ -12,6 +12,7 @@ bay.whiteboard.pencil.Curve = function(p){
   this.startPoint=p;
   p.dependant.push(this);
   this.points = [];
+  this.lastSavedPoint = 0;
   this.pos={left: p.x, right: p.x, top: p.y, bottom: p.y};
   this.exists = true;
 }
@@ -92,11 +93,12 @@ bay.whiteboard.Whiteboard.properties.curve = {
 }
 
 
-bay.whiteboard.pencil.Curve.prototype.toJson = function(list, id){
-  str = '{' + this.jsonHeader(id) + ', "type": "PencilCurve", "p0": ' + list.indexOf(this.startPoint);
-  for(var i = 0; i<this.points.length; i++){
+bay.whiteboard.pencil.Curve.prototype.toJson = function(list, id, newOnly){
+  str = '{' + this.jsonHeader(id) + ', "type": "PencilCurve", "p0": ' + list.indexOf(this.startPoint) + ', "i": ' + this.lastSavedPoint;
+  for(var i = this.lastSavedPoint; i<this.points.length; i++){
     var p = this.points[i];
     str += ', "x'+i+'": ' + p.x + ', "y'+i+'": '+p.y;
+    this.lastSavedPoint = i;
   }
   return str + '}';
 }
@@ -117,10 +119,10 @@ bay.whiteboard.Collection.setFromJsonFunc("PencilCurve", bay.whiteboard.pencil.C
 // restore point from json data
 bay.whiteboard.pencil.Curve.prototype.acceptData = function(data){
   bay.whiteboard.pencil.Curve.superClass_.acceptData.call(this, data);
-  this.points = [];
   var i = 0;
+  if(data.i) i = data.i;
   while(typeof data['x'+i] != 'undefined'){
-    this.points.push(new bay.whiteboard.Vector(data['x'+i], data['y'+i]));
+    this.points[i] = new bay.whiteboard.Vector(data['x'+i], data['y'+i]);
     i++;
   }
   this.recalc();
